@@ -1,0 +1,6 @@
+# Output files
+bin/*
+
+
+# Build artifacts
+*.o
