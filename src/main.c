@@ -1,6 +1,5 @@
-#include <stdio.h>
+#include <kro.h>
 
 int main(int argc, char *argv[]) {
-	printf("Hello, Bailey.\n");
 	return 0;
 }
