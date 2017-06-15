@@ -1,6 +1,6 @@
 BIN_PATH=bin
 CC=gcc
-CFLAGS=-I include
+CFLAGS=-c -Iinclude
 KRO_BINARY_NAME=kro
 KRO_EXECUTABLE_PATH=$(BIN_PATH)/$(KRO_BINARY_NAME)
 
@@ -16,6 +16,9 @@ all: $(KRO_EXECUTABLE_PATH)
 
 $(KRO_EXECUTABLE_PATH): $(objects)
 	$(MKDIR) -p $(BIN_PATH)
+	$(CC) $(objects) -o $@
+
+%.o: %.c
 	$(CC) $(CFLAGS) -o $@ $<
 
 clean:
