@@ -5,7 +5,6 @@
 
 #include "module.h"
 
-
 KModule* kmodule_create(char *identifier) {
 	KModule *module = (KModule*) malloc(sizeof(KModule));
 	if (module == NULL) return NULL;
@@ -59,6 +58,8 @@ void kmodule_destroy(KModule *module) {
 
 KModule* execute_module(char *identifier) {
 	KModule *m = kmodule_create(identifier);
+	if (m == NULL) return NULL;
+
 	kmodule_load(m);
 	kmodule_update(m);
 	kmodule_unload(m);
