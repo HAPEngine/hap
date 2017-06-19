@@ -1,5 +1,6 @@
 # Output files
 bin/*
+lib/*
 
 
 # Build artifacts

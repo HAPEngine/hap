@@ -1,27 +1,59 @@
+PROJECT_NAME=kro
 BIN_PATH=bin
-CC=gcc
-CFLAGS=-c -Iinclude
-KRO_BINARY_NAME=kro
-KRO_EXECUTABLE_PATH=$(BIN_PATH)/$(KRO_BINARY_NAME)
+LIB_PATH=lib
+SRC_PATH=src
 
-MKDIR=mkdir -p
-RM=rm
-RMFLAGS=-rf
+PREFIX?=/usr/local
 
-SOURCES=$(wildcard src/*.c)
-objects=$(patsubst src/%.c, src/%.o, $(SOURCES))
+LDLIBS=-lkro -ldl
+LDFLAGS=-L$(LIB_PATH) $(LDLIBS)
 
-all: $(KRO_EXECUTABLE_PATH)
+CC?=gcc
+CFLAGS=-Wall -Wextra \
+	-pedantic -Iinclude \
+        -Wl,--no-as-needed \
+	-ggdb  # Debug flag
+
+PROJECT_BINARY_NAME?=$(PROJECT_NAME)
+PROJECT_EXECUTABLE_PATH=$(BIN_PATH)/$(PROJECT_BINARY_NAME)
+PROJECT_LIBRARY_PATH=$(LIB_PATH)/lib$(PROJECT_BINARY_NAME).so
+
+MKDIR?=mkdir
+MKDIRFLAGS?=-p
+RM?=rm
+RMFLAGS?=-rf
+
+CMD_SOURCES?=$(wildcard $(SRC_PATH)/cmds/*.c)
+cmds_objects=$(CMD_SOURCES:.c=.o)
+CMD_BIN_PATHS=$(patsubst $(SRC_PATH)/cmds/%.c,$(BIN_PATH)/%,$(CMD_SOURCES))
+
+SOURCES?=$(wildcard $(SRC_PATH)/*.c)
+objects=$(SOURCES:.c=.o)
+
+all: $(CMD_BIN_PATHS)
 .PHONY: all
 
-$(KRO_EXECUTABLE_PATH): $(objects)
-	$(MKDIR) -p $(BIN_PATH)
-	$(CC) $(objects) -o $@
+bin/%: $(SRC_PATH)/cmds/%.o $(PROJECT_LIBRARY_PATH)
+	$(MKDIR) $(MKDIRFLAGS) $(BIN_PATH)
+	$(CC) $(CFLAGS) $(LDFLAGS) $< -o $@
+
+$(PROJECT_LIBRARY_PATH): $(objects)
+	$(MKDIR) $(MKDIRFLAGS) $(LIB_PATH)
+	$(CC) -shared $(CFLAGS) $(objects) -o $@
 
 %.o: %.c
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) -fPIC $(CFLAGS) -c -o $@ $^
+
+install:
+	$(MKDIR) -p $(PREFIX)/bin
+	cp $(CMD_BIN_PATHS) $(PREFIX)/bin
+	$(MKDIR) -p $(PREFIX)/lib
+	cp $(PROJECT_LIBRARY_PATH) $(PREFIX)/lib
+
+.PHONY: install
 
 clean:
-	$(RM) $(RMFLAGS) $(objects)
+	$(RM) $(RMFLAGS) $(objects) $(cmds_objects)
 	$(RM) $(RMFLAGS) $(BIN_PATH)
+	$(RM) $(RMFLAGS) $(LIB_PATH)
 .PHONY: clean

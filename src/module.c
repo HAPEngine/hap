@@ -1,27 +1,44 @@
+#include <dlfcn.h>
 #include <stdlib.h>
 
-typedef struct {
-	char *identifier;
-} KModule;
+#include <kro.h>
+
+#include "module.h"
 
 
-KModule* kmodule_create(void) {
-	KModule *module = malloc(sizeof(KModule));
-	return module;
-}
-
-
-KModule* kmodule_load(char *identifier) {
-	KModule *module = kmodule_create();
+KModule* kmodule_create(char *identifier) {
+	KModule *module = (KModule*) malloc(sizeof(KModule));
 	(*module).identifier = identifier;
+	(*module).ref = dlopen((*module).identifier, RTLD_NOW);
+	/* (*module).state = ((*module).create()); */
 	return module;
 }
 
 
-KModule* kmodule_update(KModule *module) {}
+void kmodule_load(KModule *module) {
+	/* (*module).load((*module).identifier); */
+}
 
-KModule* kmodule_unload(KModule *module) {}
+void kmodule_update(KModule *module) {
+	/* (*module).update((*module).state); */
+}
+
+void kmodule_unload(KModule *module) {
+	/* (*module).unload((*module).state); */
+}
 
 void kmodule_destroy(KModule *module) {
+	/* (*module).destroy((*module).state); */
+	(*module).state = NULL;
+	dlclose((*module).ref);
 	free(module);
+}
+
+KModule* execute_module(char *identifier) {
+	KModule *m = kmodule_create(identifier);
+	kmodule_load(m);
+	kmodule_update(m);
+	kmodule_unload(m);
+	kmodule_destroy(m);
+	return m;
 }
