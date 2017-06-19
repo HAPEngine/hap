@@ -8,27 +8,50 @@
 
 KModule* kmodule_create(char *identifier) {
 	KModule *module = (KModule*) malloc(sizeof(KModule));
+	if (module == NULL) return NULL;
+
 	(*module).identifier = identifier;
 	(*module).ref = dlopen((*module).identifier, RTLD_NOW);
-	/* (*module).state = ((*module).create()); */
+
+	if ((*module).ref == NULL) {
+		free(module);
+		return NULL;
+	}
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+	(*module).create = (void* (*)(void)) dlsym((*module).ref, "create");
+	(*module).load = (void (*)(char *identifier)) dlsym((*module).ref, "load");
+	(*module).update = (void (*)(void* state)) dlsym((*module).ref, "update");
+	(*module).unload = (void (*)(void* state)) dlsym((*module).ref, "unload");
+	(*module).destroy = (void (*)(void* state)) dlsym((*module).ref, "destroy");
+#pragma GCC diagnostic pop
+
+	if ((*module).create) (*module).state = ((*module).create());
+
 	return module;
 }
 
 
 void kmodule_load(KModule *module) {
-	/* (*module).load((*module).identifier); */
+	if ((*module).load != NULL)
+		(*module).load((*module).identifier);
 }
 
 void kmodule_update(KModule *module) {
-	/* (*module).update((*module).state); */
+	if ((*module).update != NULL)
+		(*module).update((*module).state);
 }
 
 void kmodule_unload(KModule *module) {
-	/* (*module).unload((*module).state); */
+	if ((*module).unload != NULL)
+		(*module).unload((*module).state);
 }
 
 void kmodule_destroy(KModule *module) {
-	/* (*module).destroy((*module).state); */
+	if ((*module).destroy != NULL)
+		(*module).destroy((*module).state);
+
 	(*module).state = NULL;
 	dlclose((*module).ref);
 	free(module);
