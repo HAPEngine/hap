@@ -5,6 +5,20 @@
 
 #include "module.h"
 
+
+void* kmodule_execute(char *identifier) {
+	KModule *m = kmodule_create(identifier);
+	if (m == NULL) return NULL;
+
+	kmodule_load(m);
+	kmodule_update(m);
+	kmodule_unload(m);
+	kmodule_destroy(m);
+
+	return (void *)m;
+}
+
+
 KModule* kmodule_create(char *identifier) {
 	KModule *module = (KModule*) malloc(sizeof(KModule));
 	if (module == NULL) return NULL;
@@ -54,15 +68,4 @@ void kmodule_destroy(KModule *module) {
 	(*module).state = NULL;
 	dlclose((*module).ref);
 	free(module);
-}
-
-KModule* execute_module(char *identifier) {
-	KModule *m = kmodule_create(identifier);
-	if (m == NULL) return NULL;
-
-	kmodule_load(m);
-	kmodule_update(m);
-	kmodule_unload(m);
-	kmodule_destroy(m);
-	return m;
 }
