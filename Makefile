@@ -49,7 +49,6 @@ install:
 	cp $(CMD_BIN_PATHS) $(PREFIX)/bin
 	$(MKDIR) -p $(PREFIX)/lib
 	cp $(PROJECT_LIBRARY_PATH) $(PREFIX)/lib
-
 .PHONY: install
 
 clean:
