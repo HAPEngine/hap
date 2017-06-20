@@ -13,7 +13,7 @@ void* create(void) {
 	return (void*) state;
 }
 
-void load(char *identifier) {
+void load(void *state, char *identifier) {
 	printf("Loading example from: %s\n", identifier);
 }
 
@@ -28,4 +28,3 @@ void unload(void* state) {
 void destroy(void* state) {
 	printf("Destroying example module.\n");
 }
-

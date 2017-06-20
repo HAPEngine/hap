@@ -34,7 +34,7 @@ KModule* kmodule_create(char *identifier) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
 	(*module).create = (void* (*)(void)) dlsym((*module).ref, "create");
-	(*module).load = (void (*)(char *identifier)) dlsym((*module).ref, "load");
+	(*module).load = (void (*)(void *state, char *identifier)) dlsym((*module).ref, "load");
 	(*module).update = (void (*)(void* state)) dlsym((*module).ref, "update");
 	(*module).unload = (void (*)(void* state)) dlsym((*module).ref, "unload");
 	(*module).destroy = (void (*)(void* state)) dlsym((*module).ref, "destroy");
@@ -48,7 +48,7 @@ KModule* kmodule_create(char *identifier) {
 
 void kmodule_load(KModule *module) {
 	if ((*module).load != NULL)
-		(*module).load((*module).identifier);
+		(*module).load((*module).state, (*module).identifier);
 }
 
 void kmodule_update(KModule *module) {

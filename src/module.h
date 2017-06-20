@@ -8,7 +8,7 @@ typedef struct KModule {
 	void *state;
 
 	void* (*create)(void);
-	void (*load)(char *identifier);
+	void (*load)(void *state, char *identifier);
 	void (*update)(void* state);
 	void (*unload)(void* state);
 	void (*destroy)(void* state);
