@@ -1,5 +1,10 @@
+typedef struct {
+	char *name;
+} exampleState;
+
+
 extern void* create(void);
-extern void load(void *state, char *identifier);
-extern void update(void* state);
-extern void unload(void* state);
-extern void destroy(void* state);
+extern void load(exampleState *state, char *identifier);
+extern void update(exampleState *state);
+extern void unload(exampleState *state);
+extern void destroy(exampleState *state);
