@@ -42,8 +42,6 @@ KModule* kmodule_create(char *identifier) {
 
 	if ((*module).create)
 		(*module).state = ((*module).create());
-	else
-		printf("No create\n");
 
 	return module;
 }
@@ -51,22 +49,16 @@ KModule* kmodule_create(char *identifier) {
 void kmodule_load(KModule *module) {
 	if ((*module).load != NULL)
 		(*module).load((*module).identifier);
-	else
-		printf("No load\n");
 }
 
 void kmodule_update(KModule *module) {
 	if ((*module).update != NULL)
 		(*module).update((*module).state);
-	else
-		printf("No update\n");
 }
 
 void kmodule_unload(KModule *module) {
 	if ((*module).unload != NULL)
 		(*module).unload((*module).state);
-	else
-		printf("No unload\n");
 }
 
 void kmodule_destroy(KModule *module) {
