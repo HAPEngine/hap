@@ -59,9 +59,9 @@ $(LIB_PATH)/libkro_%.so: $(lib_src_path)/kro_%.c
 	$(CC) -fPIC $(CFLAGS) -c -o $@ $<
 
 install:
-	$(MKDIR) -p $(PREFIX)/bin
+	$(MKDIR) $(PREFIX)/bin
 	cp $(CMD_BIN_PATHS) $(PREFIX)/bin
-	$(MKDIR) -p $(PREFIX)/lib
+	$(MKDIR) $(PREFIX)/lib
 	cp $(PROJECT_LIBRARY_PATH) $(PREFIX)/lib
 .PHONY: install
 
