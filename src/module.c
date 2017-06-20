@@ -1,10 +1,9 @@
 #include <dlfcn.h>
 #include <stdlib.h>
-
+#include <stdio.h>
 #include <kro.h>
 
 #include "module.h"
-
 
 void* kmodule_execute(char *identifier) {
 	KModule *m = kmodule_create(identifier);
@@ -18,7 +17,6 @@ void* kmodule_execute(char *identifier) {
 	return (void *)m;
 }
 
-
 KModule* kmodule_create(char *identifier) {
 	KModule *module = (KModule*) malloc(sizeof(KModule));
 	if (module == NULL) return NULL;
@@ -27,7 +25,9 @@ KModule* kmodule_create(char *identifier) {
 	(*module).ref = dlopen((*module).identifier, RTLD_NOW);
 
 	if ((*module).ref == NULL) {
+		printf("Failed to load module: %s\nError was: %s\n", (*module).identifier, dlerror());
 		free(module);
+		exit(EXIT_FAILURE);
 		return NULL;
 	}
 
@@ -40,25 +40,33 @@ KModule* kmodule_create(char *identifier) {
 	(*module).destroy = (void (*)(void* state)) dlsym((*module).ref, "destroy");
 #pragma GCC diagnostic pop
 
-	if ((*module).create) (*module).state = ((*module).create());
+	if ((*module).create)
+		(*module).state = ((*module).create());
+	else
+		printf("No create\n");
 
 	return module;
 }
 
-
 void kmodule_load(KModule *module) {
 	if ((*module).load != NULL)
 		(*module).load((*module).identifier);
+	else
+		printf("No load\n");
 }
 
 void kmodule_update(KModule *module) {
 	if ((*module).update != NULL)
 		(*module).update((*module).state);
+	else
+		printf("No update\n");
 }
 
 void kmodule_unload(KModule *module) {
 	if ((*module).unload != NULL)
 		(*module).unload((*module).state);
+	else
+		printf("No unload\n");
 }
 
 void kmodule_destroy(KModule *module) {
