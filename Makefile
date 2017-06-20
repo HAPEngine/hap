@@ -39,7 +39,7 @@ RM := rm $(RMFLAGS)
 all: $(CMD_BIN_PATHS) $(MODULE_LIB_PATHS)
 .PHONY: all
 
-bin/kro: $(bin_src_path)/kro.o $(PROJECT_LIBRARY_PATH) $(objects)
+bin/kro: $(bin_src_path)/kro.o $(PROJECT_LIBRARY_PATH)
 	$(MKDIR) $(BIN_PATH)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(objects) $< -o $@
 
@@ -47,7 +47,11 @@ $(BIN_PATH)/%: $(bin_src_path)/%.o $(PROJECT_LIBRARY_PATH)
 	$(MKDIR) $(BIN_PATH)
 	$(CC) $(CFLAGS) $(LDFLAGS) $< -o $@
 
-$(LIB_PATH)/lib%.so: $(lib_src_path)/%.c
+$(PROJECT_LIBRARY_PATH): $(objects)
+	$(MKDIR) $(LIB_PATH)
+	$(CC) -rdynamic -shared $(CFLAGS) $^ -o $@
+
+$(LIB_PATH)/libkro_%.so: $(lib_src_path)/kro_%.c
 	$(MKDIR) $(LIB_PATH)
 	$(CC) -rdynamic -shared $(CFLAGS) $< -o $@
 
