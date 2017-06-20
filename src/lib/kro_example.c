@@ -11,17 +11,17 @@ void* create(void) {
 
 void load(exampleState *state, char *identifier) {
 	(*state).name = identifier;
-	printf("Loading example from: %s\n", (*state).name);
+	printf("Loading example from %s\n", (*state).name);
 }
 
 void update(exampleState *state) {
-	printf("Updating example module at: %s\n", (*state).name);
+	printf("Updating example module at %s\n", (*state).name);
 }
 
 void unload(exampleState *state) {
-	printf("Unloading example module at: %s\n", (*state).name);
+	printf("Unloading example module at %s\n", (*state).name);
 }
 
 void destroy(exampleState *state) {
-	printf("Destroying example module at: %s\n", (*state).name);
+	printf("Destroying example module at %s\n", (*state).name);
 }
