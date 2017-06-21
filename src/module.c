@@ -40,7 +40,10 @@ void* kmodule_execute(KSystem *system, char *identifier) {
 			}
 		} else {
 			while ((simulatedTime + (*m).nextUpdate) < (*time).deltaTime) {
-				if (nextUpdate < 0) break;
+				if (nextUpdate < 0) {
+					(*m).nextUpdate = nextUpdate;
+					break;
+				}
 				(*m).nextUpdate -= SIMULATION_SLICE_TIME;
 				if ((*m).nextUpdate < 0) (*m).nextUpdate = 0;
 				nextUpdate = kmodule_update(system, m);
