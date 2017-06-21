@@ -35,7 +35,7 @@ void* kmodule_execute(char *identifier, timeState* state) {
 
 
 KModule* kmodule_create(char *identifier) {
-	KModule *module = (KModule*) malloc(sizeof(KModule));
+	KModule *module = (KModule*) calloc(1, sizeof(KModule));
 	if (module == NULL) return NULL;
 
 	(*module).identifier = identifier;
