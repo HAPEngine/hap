@@ -13,6 +13,7 @@
 
 void* kmodule_execute(KSystem *system, char *identifier) {
 	timeState *time;
+	KTime nextUpdate;
 	KTime simulatedTime;
 	KModule *m = kmodule_create(system, identifier);
 	if (m == NULL) return NULL;
@@ -27,16 +28,24 @@ void* kmodule_execute(KSystem *system, char *identifier) {
 	// TODO: Handle keyboard interrupt?
 	while ((*m).nextUpdate > -1) {
 		updateTimeState((*system).time);
+
 		simulatedTime = 0;
+		nextUpdate = (*m).nextUpdate;
 
 		if ((*m).nextUpdate) {
 			(*m).nextUpdate -= (*time).deltaTime;
-			if ((*m).nextUpdate < 0) (*m).nextUpdate = 0;
+
+			if ((*m).nextUpdate < 0) {
+				(*m).nextUpdate = 0;
+			}
 		} else {
 			while ((simulatedTime + (*m).nextUpdate) < (*time).deltaTime) {
+				if (nextUpdate < 0) break;
 				(*m).nextUpdate -= SIMULATION_SLICE_TIME;
 				if ((*m).nextUpdate < 0) (*m).nextUpdate = 0;
-				(*m).nextUpdate += kmodule_update(system, m);
+				nextUpdate = kmodule_update(system, m);
+				(*m).nextUpdate = nextUpdate;
+				simulatedTime += SIMULATION_SLICE_TIME;
 			}
 		}
 	}
