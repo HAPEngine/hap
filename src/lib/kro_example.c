@@ -20,7 +20,9 @@ void load(exampleState *state, char *identifier) {
 
 KTime update(exampleState *state) {
 	printf("Updating example module at %s\n", (*state).name);
-	return 0;
+
+	// Run this function no more often than once every quarter second
+	return 0.25;
 }
 
 
