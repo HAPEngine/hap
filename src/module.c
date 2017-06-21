@@ -6,8 +6,10 @@
 #include "module.h"
 #include "timer.h"
 
+#define SIMULATION_SLICE_TIME 1 / 60
 
 void* kmodule_execute(char *identifier, timeState* state) {
+	KTime simulatedTime;
 	KModule *m = kmodule_create(identifier);
 	if (m == NULL) return NULL;
 
@@ -19,12 +21,17 @@ void* kmodule_execute(char *identifier, timeState* state) {
 	// TODO: Handle keyboard interrupt?
 	while ((*m).nextUpdate > -1) {
 		updateTimeState(state);
+		simulatedTime = 0;
 
 		if ((*m).nextUpdate) {
 			(*m).nextUpdate -= (*state).deltaTime;
 			if ((*m).nextUpdate < 0) (*m).nextUpdate = 0;
 		} else {
-			(*m).nextUpdate = kmodule_update(m);
+			while ((simulatedTime + (*m).nextUpdate) < (*state).deltaTime) {
+				(*m).nextUpdate -= SIMULATION_SLICE_TIME;
+				if ((*m).nextUpdate < 0) (*m).nextUpdate = 0;
+				(*m).nextUpdate += kmodule_update(m);
+			}
 		}
 	}
 
