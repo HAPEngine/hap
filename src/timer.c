@@ -9,7 +9,7 @@ timeState* updateTimeState(timeState *state) {
 	if (state == NULL) state = createTimeState();
 	if (state == NULL) return NULL;
 
-	KTime currentTime = (KTime) clock();
+	KTime currentTime = (KTime) time(0);
 	(*state).deltaTime = currentTime - (*state).currentTime;
 	(*state).currentTime = currentTime;
 	return state;
@@ -20,7 +20,7 @@ timeState* updateTimeState(timeState *state) {
 timeState* createTimeState(void) {
 	timeState *state = malloc(sizeof(timeState));
 	if (state == NULL) return NULL;
-	(*state).currentTime = (KTime) clock();
+	(*state).currentTime = (KTime) time(0);
 	(*state).deltaTime = 0;
 	return state;
 }
