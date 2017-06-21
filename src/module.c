@@ -6,7 +6,8 @@
 #include "module.h"
 #include "timer.h"
 
-#define SIMULATION_SLICE_TIME 1 / 60
+// Assume a max FPS of 248
+#define SIMULATION_SLICE_TIME 1 / 248
 
 void* kmodule_execute(char *identifier, timeState* state) {
 	KTime simulatedTime;
