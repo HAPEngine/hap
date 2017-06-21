@@ -3,7 +3,8 @@
 #include <kro.h>
 
 int main(int argc, char **argv) {
-	int index = 0;
+	KSystem *system = calloc(1, sizeof(KSystem));
+	short index = 0;
 
 	if (argc <= 1) {
 		printf("No modules to load. Nothing to do.\n");
@@ -11,7 +12,8 @@ int main(int argc, char **argv) {
 	}
 
 	for (index=1; index < argc; ++index)
-		kmodule_execute(argv[index], NULL);
+		kmodule_execute(system, argv[index]);
 
+	free(system);
 	return 0;
 }

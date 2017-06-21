@@ -6,29 +6,34 @@
 #include "module.h"
 #include "timer.h"
 
-// Assume a max FPS of 248
-#define SIMULATION_SLICE_TIME 1 / 248
 
-void* kmodule_execute(char *identifier, timeState* state) {
+// Assume a max FPS of 248
+#define SIMULATION_SLICE_TIME (1.0 / 248)
+
+
+void* kmodule_execute(KSystem *system, char *identifier) {
+	timeState *time;
 	KTime simulatedTime;
 	KModule *m = kmodule_create(identifier);
 	if (m == NULL) return NULL;
 
 	kmodule_load(m);
 
-	if (state == NULL) state = updateTimeState(state);
-	if (state == NULL) return NULL;
+	if ((*system).time == NULL) (*system).time = updateTimeState((*system).time);
+	if ((*system).time == NULL) return NULL;
+
+	time = (*system).time;
 
 	// TODO: Handle keyboard interrupt?
 	while ((*m).nextUpdate > -1) {
-		updateTimeState(state);
+		updateTimeState((*system).time);
 		simulatedTime = 0;
 
 		if ((*m).nextUpdate) {
-			(*m).nextUpdate -= (*state).deltaTime;
+			(*m).nextUpdate -= (*time).deltaTime;
 			if ((*m).nextUpdate < 0) (*m).nextUpdate = 0;
 		} else {
-			while ((simulatedTime + (*m).nextUpdate) < (*state).deltaTime) {
+			while ((simulatedTime + (*m).nextUpdate) < (*time).deltaTime) {
 				(*m).nextUpdate -= SIMULATION_SLICE_TIME;
 				if ((*m).nextUpdate < 0) (*m).nextUpdate = 0;
 				(*m).nextUpdate += kmodule_update(m);

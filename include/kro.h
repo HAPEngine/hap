@@ -9,7 +9,11 @@ typedef struct {
 	KTime deltaTime;
 } timeState;
 
-void* kmodule_execute(char *identifier, timeState* state);
+typedef struct {
+	timeState *time;
+} KSystem;
+
+void* kmodule_execute(KSystem *system, char *identifier);
 
 
 #endif
