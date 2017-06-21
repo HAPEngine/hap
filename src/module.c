@@ -1,21 +1,38 @@
 #include <dlfcn.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <kro.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "module.h"
+#include "timer.h"
 
-void* kmodule_execute(char *identifier) {
+
+void* kmodule_execute(char *identifier, timeState* state) {
 	KModule *m = kmodule_create(identifier);
 	if (m == NULL) return NULL;
 
 	kmodule_load(m);
-	kmodule_update(m);
+
+	if (state == NULL) state = updateTimeState(state);
+	if (state == NULL) return NULL;
+
+	// TODO: Handle keyboard interrupt?
+	while ((*m).nextUpdate > -1) {
+		updateTimeState(state);
+
+		if ((*m).nextUpdate) {
+			(*m).nextUpdate -= (*state).deltaTime;
+			if ((*m).nextUpdate < 0) (*m).nextUpdate = 0;
+		} else {
+			(*m).nextUpdate = kmodule_update(m);
+		}
+	}
+
 	kmodule_unload(m);
 	kmodule_destroy(m);
-
-	return (void *)m;
+	return (void*) m;
 }
+
 
 KModule* kmodule_create(char *identifier) {
 	KModule *module = (KModule*) malloc(sizeof(KModule));
@@ -35,7 +52,7 @@ KModule* kmodule_create(char *identifier) {
 #pragma GCC diagnostic ignored "-Wpedantic"
 	(*module).create = (void* (*)(void)) dlsym((*module).ref, "create");
 	(*module).load = (void (*)(void *state, char *identifier)) dlsym((*module).ref, "load");
-	(*module).update = (void (*)(void* state)) dlsym((*module).ref, "update");
+	(*module).update = (KTime (*)(void* state)) dlsym((*module).ref, "update");
 	(*module).unload = (void (*)(void* state)) dlsym((*module).ref, "unload");
 	(*module).destroy = (void (*)(void* state)) dlsym((*module).ref, "destroy");
 #pragma GCC diagnostic pop
@@ -46,20 +63,24 @@ KModule* kmodule_create(char *identifier) {
 	return module;
 }
 
+
 void kmodule_load(KModule *module) {
-	if ((*module).load != NULL)
-		(*module).load((*module).state, (*module).identifier);
+	if ((*module).load == NULL) return;
+	(*module).load((*module).state, (*module).identifier);
 }
 
-void kmodule_update(KModule *module) {
-	if ((*module).update != NULL)
-		(*module).update((*module).state);
+
+KTime kmodule_update(KModule *module) {
+	if ((*module).update == NULL) return 0;
+	return (*module).update((*module).state);
 }
+
 
 void kmodule_unload(KModule *module) {
-	if ((*module).unload != NULL)
-		(*module).unload((*module).state);
+	if ((*module).unload == NULL) return;
+	(*module).unload((*module).state);
 }
+
 
 void kmodule_destroy(KModule *module) {
 	if ((*module).destroy != NULL)

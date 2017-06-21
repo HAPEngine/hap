@@ -2,7 +2,14 @@
 #define __KRO_INCLUDED__
 
 
-void* kmodule_execute(char *identifier);
+typedef double KTime;
+
+typedef struct {
+	KTime currentTime;
+	KTime deltaTime;
+} timeState;
+
+void* kmodule_execute(char *identifier, timeState* state);
 
 
 #endif

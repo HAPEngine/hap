@@ -13,7 +13,7 @@ LDLIBS=-lkro -ldl
 LDFLAGS=-L$(LIB_PATH) $(LDLIBS)
 
 CC := gcc
-CFLAGS=-Wall -Wextra -Weverything -pedantic -Iinclude
+CFLAGS=-Wall -Wextra -pedantic -Iinclude -Wl,--no-as-needed
 
 PROJECT_BINARY_NAME := $(PROJECT_NAME)
 PROJECT_EXECUTABLE_PATH = $(BIN_PATH)/$(PROJECT_BINARY_NAME)
@@ -49,11 +49,11 @@ $(BIN_PATH)/%: $(bin_src_path)/%.o $(PROJECT_LIBRARY_PATH)
 
 $(PROJECT_LIBRARY_PATH): $(objects)
 	$(MKDIR) $(LIB_PATH)
-	$(CC) -rdynamic -shared $(CFLAGS) $^ -o $@
+	$(CC) -fPIC -rdynamic -shared $(CFLAGS) $^ -o $@
 
 $(LIB_PATH)/libkro_%.so: $(lib_src_path)/kro_%.c
 	$(MKDIR) $(LIB_PATH)
-	$(CC) -rdynamic -shared $(CFLAGS) $< -o $@
+	$(CC) -fPIC -rdynamic -shared $(CFLAGS) $< -o $@
 
 %.o: %.c
 	$(CC) -fPIC $(CFLAGS) -c -o $@ $<
