@@ -5,32 +5,31 @@
 #include "kro_example.h"
 
 
-void* create(void) {
+void* create(KSystem *system) {
 	exampleState *state = (exampleState*) malloc(sizeof(exampleState));
-	printf("Creating example module.\n");
+	printf("[        ] Creating example module\n");
 	return (void*) state;
 }
 
 
-void load(exampleState *state, char *identifier) {
+void load(KSystem *system, exampleState *state, char *identifier) {
 	(*state).name = identifier;
-	printf("Loading example from %s\n", (*state).name);
+	printf("[        ] Loading %s\n", (*state).name);
 }
 
 
-KTime update(exampleState *state) {
-	printf("Updating example module at %s\n", (*state).name);
+KTime update(KSystem *system, exampleState *state) {
+	printf("[%lf] Updating example module at %s\n", system->time->deltaTime, (*state).name);
 
 	// Run this function no more often than once every quarter second
 	return 0.25;
 }
 
 
-void unload(exampleState *state) {
-	printf("Unloading example module at %s\n", (*state).name);
+void unload(KSystem *system, exampleState *state) {
+	printf("[%lf] Unloading example module at %s\n", system->time->deltaTime, (*state).name);
 }
 
 
-void destroy(exampleState *state) {
-	printf("Destroying example module at %s\n", (*state).name);
-}
+void destroy(KSystem *system, exampleState *state) {
+	printf("[%lf] Destroying example module at %s\n", system->time->deltaTime, (*state).name); }

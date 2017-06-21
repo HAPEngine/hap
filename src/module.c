@@ -14,10 +14,10 @@
 void* kmodule_execute(KSystem *system, char *identifier) {
 	timeState *time;
 	KTime simulatedTime;
-	KModule *m = kmodule_create(identifier);
+	KModule *m = kmodule_create(system, identifier);
 	if (m == NULL) return NULL;
 
-	kmodule_load(m);
+	kmodule_load(system, m);
 
 	if ((*system).time == NULL) (*system).time = updateTimeState((*system).time);
 	if ((*system).time == NULL) return NULL;
@@ -36,18 +36,18 @@ void* kmodule_execute(KSystem *system, char *identifier) {
 			while ((simulatedTime + (*m).nextUpdate) < (*time).deltaTime) {
 				(*m).nextUpdate -= SIMULATION_SLICE_TIME;
 				if ((*m).nextUpdate < 0) (*m).nextUpdate = 0;
-				(*m).nextUpdate += kmodule_update(m);
+				(*m).nextUpdate += kmodule_update(system, m);
 			}
 		}
 	}
 
-	kmodule_unload(m);
-	kmodule_destroy(m);
+	kmodule_unload(system, m);
+	kmodule_destroy(system, m);
 	return (void*) m;
 }
 
 
-KModule* kmodule_create(char *identifier) {
+KModule* kmodule_create(KSystem *system, char *identifier) {
 	KModule *module = (KModule*) calloc(1, sizeof(KModule));
 	if (module == NULL) return NULL;
 
@@ -63,41 +63,41 @@ KModule* kmodule_create(char *identifier) {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
-	(*module).create = (void* (*)(void)) dlsym((*module).ref, "create");
-	(*module).load = (void (*)(void *state, char *identifier)) dlsym((*module).ref, "load");
-	(*module).update = (KTime (*)(void* state)) dlsym((*module).ref, "update");
-	(*module).unload = (void (*)(void* state)) dlsym((*module).ref, "unload");
-	(*module).destroy = (void (*)(void* state)) dlsym((*module).ref, "destroy");
+	(*module).create = (void* (*)(KSystem* system)) dlsym((*module).ref, "create");
+	(*module).load = (void (*)(KSystem* system, void *state, char *identifier)) dlsym((*module).ref, "load");
+	(*module).update = (KTime (*)(KSystem* system, void *state)) dlsym((*module).ref, "update");
+	(*module).unload = (void (*)(KSystem* system, void *state)) dlsym((*module).ref, "unload");
+	(*module).destroy = (void (*)(KSystem* system, void *state)) dlsym((*module).ref, "destroy");
 #pragma GCC diagnostic pop
 
 	if ((*module).create)
-		(*module).state = ((*module).create());
+		(*module).state = ((*module).create(system));
 
 	return module;
 }
 
 
-void kmodule_load(KModule *module) {
+void kmodule_load(KSystem *system, KModule *module) {
 	if ((*module).load == NULL) return;
-	(*module).load((*module).state, (*module).identifier);
+	(*module).load(system, (*module).state, (*module).identifier);
 }
 
 
-KTime kmodule_update(KModule *module) {
+KTime kmodule_update(KSystem *system, KModule *module) {
 	if ((*module).update == NULL) return 0;
-	return (*module).update((*module).state);
+	return (*module).update(system, (*module).state);
 }
 
 
-void kmodule_unload(KModule *module) {
+void kmodule_unload(KSystem *system, KModule *module) {
 	if ((*module).unload == NULL) return;
-	(*module).unload((*module).state);
+	(*module).unload(system, (*module).state);
 }
 
 
-void kmodule_destroy(KModule *module) {
+void kmodule_destroy(KSystem *system, KModule *module) {
 	if ((*module).destroy != NULL)
-		(*module).destroy((*module).state);
+		(*module).destroy(system, (*module).state);
 
 	(*module).state = NULL;
 	dlclose((*module).ref);
