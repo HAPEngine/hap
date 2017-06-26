@@ -65,6 +65,10 @@ install:
 	cp $(PROJECT_LIBRARY_PATH) $(PREFIX)/lib
 .PHONY: install
 
+test:
+	true
+.PHONY: test
+
 clean:
 	$(RM) $(objects) $(cmds_objects)
 	$(RM) $(BIN_PATH)
