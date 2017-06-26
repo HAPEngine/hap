@@ -13,7 +13,7 @@ LDLIBS=-lkro -ldl
 LDFLAGS=-L$(LIB_PATH) $(LDLIBS)
 
 CC := gcc
-CFLAGS=-Wall -Wextra -pedantic -Iinclude -Wl,--no-as-needed
+CFLAGS=-Wall -Wextra -pedantic -Iinclude
 
 PROJECT_BINARY_NAME := $(PROJECT_NAME)
 PROJECT_EXECUTABLE_PATH = $(BIN_PATH)/$(PROJECT_BINARY_NAME)
