@@ -1,6 +1,12 @@
+#ifndef _POSIX_C_SOURCE
+/** Apparently we need to to tell time.h that it's 1993 :) **/
+#define _POSIX_C_SOURCE 199309L
+#endif
+
 #include <stdio.h>
+
 #include <stdlib.h>
-#include <sys/time.h>
+#include <time.h>
 
 #include "timer.h"
 
@@ -14,9 +20,9 @@ timeState* updateTimeState(timeState *state) {
 	if (state == NULL) return NULL;
 
 	struct timespec tv;
-	if (clock_gettime(CLOCK_REALTIME, &tv) != 0) return 0;
+	if (clock_gettime(CLOCK_MONOTONIC, &tv) != 0) return 0;
 
-	KTime currentTime = tv.tv_sec + (tv.tv_nsec / NANOSECOND_DIVISOR);
+	KTime currentTime = (KTime) tv.tv_sec + ((KTime) tv.tv_nsec / NANOSECOND_DIVISOR);
 	(*state).deltaTime = currentTime - (*state).currentTime;
 	(*state).currentTime = currentTime;
 

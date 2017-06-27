@@ -9,16 +9,23 @@ bin_src_path = $(SRC_PATH)/cmds
 
 PREFIX := /usr/local
 
+ifeq ($(OS),Windows_NT)
+  # Protect against windows not having "uname -s"
+  SYSTEM_CFLAGS :=
+else
+  os_type=$(shell uname -s)
+  ifeq ($(os_type),Linux)
+    SYSTEM_CFLAGS := -Wl,--no-as-needed
+  else
+    SYSTEM_CFLAGS :=
+  endif
+endif
+
+SYSTEM_LDFLAGS=
 LDLIBS=-lkro -ldl
 LDFLAGS=-L$(LIB_PATH) $(LDLIBS)
 
 CC := gcc
-
-ifeq ($(OS),Linux)
-	SYSTEM_CFLAGS=-Wl,--no-as-needed
-else
-	SYSTEM_CFLAGS=
-endif
 
 CFLAGS=--std=c99 -Wall -Wextra -pedantic -Iinclude $(SYSTEM_CFLAGS)
 
