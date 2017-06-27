@@ -2,4 +2,4 @@
 
 
 timeState* updateTimeState(timeState *state);
-timeState* createTimeState(void);
+void destroyTimeState(timeState *state);

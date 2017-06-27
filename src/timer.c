@@ -19,16 +19,31 @@ timeState* updateTimeState(timeState *state) {
 		state = (timeState*) calloc(1, sizeof(timeState));
 		(*state).currentTime = (KTime) time(NULL);
 		(*state).deltaTime = 0;
+		(*state).timespec = calloc(1, sizeof(timespec));
 	}
 
 	if (state == NULL) return NULL;
+	timespec *tv = (timespec*) (*state).timespec;
+	if (tv == NULL) return NULL;
 
-	timespec tv;
-	if (clock_gettime(CLOCK_MONOTONIC, &tv) != 0) return 0;
+	if (clock_gettime(CLOCK_MONOTONIC, tv) != 0) return 0;
 
-	KTime currentTime = (KTime) tv.tv_sec + ((KTime) tv.tv_nsec / 1e9);
+	KTime currentTime = (KTime) (*tv).tv_sec + ((KTime) (*tv).tv_nsec / (KTime) 1e9);
 	(*state).deltaTime = currentTime - (*state).currentTime;
 	(*state).currentTime = currentTime;
 
 	return state;
+}
+
+
+void destroyTimeState(timeState *state) {
+	(*state).currentTime = 0;
+	(*state).deltaTime = 0;
+
+	if ((*state).timespec != NULL) {
+		free((*state).timespec);
+		(*state).timespec = NULL;
+	}
+
+	free(state);
 }

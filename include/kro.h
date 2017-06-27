@@ -7,6 +7,8 @@ typedef long double KTime;
 typedef struct {
 	KTime currentTime;
 	KTime deltaTime;
+
+	void *timespec;
 } timeState;
 
 typedef struct {
