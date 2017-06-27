@@ -19,7 +19,7 @@ void load(KSystem *system, exampleState *state, char *identifier) {
 
 
 KTime update(KSystem *system, exampleState *state) {
-	printf("[%lf] Updating example module at %s\n", (*(*system).time).deltaTime, (*state).name);
+	printf("[%Lf] Updating example module at %s\n", (*(*system).time).deltaTime, (*state).name);
 
 	// Run this function no more often than once every quarter second
 	return 0.25;
@@ -27,10 +27,10 @@ KTime update(KSystem *system, exampleState *state) {
 
 
 void unload(KSystem *system, exampleState *state) {
-	printf("[%lf] Unloading example module at %s\n", (*(*system).time).deltaTime, (*state).name);
+	printf("[%Lf] Unloading example module at %s\n", (*(*system).time).deltaTime, (*state).name);
 }
 
 
 void destroy(KSystem *system, exampleState *state) {
-	printf("[%lf] Destroying example module at %s\n", (*(*system).time).deltaTime, (*state).name);
+	printf("[%Lf] Destroying example module at %s\n", (*(*system).time).deltaTime, (*state).name);
 }

@@ -7,8 +7,21 @@
 #include "timer.h"
 
 
-// Assume a max FPS of 248
-#define SIMULATION_SLICE_TIME (1.0 / 248)
+/**
+ * Don't allow simulating frames lower than 60FPS
+ *
+ * If a module is slow to update, the we don't want to get into cases
+ * where frames are given large amounts of time between eachother.
+ *
+ * For instance, an extreme example - it would be much more difficult to detect
+ * all possible collisions that occured between objects in a 3D game within the
+ * last 10 seconds so it makes more sense to simulate all modules one after
+ * another in 16ms increments which provides less chance of missing collisions.
+ *
+ * Although less common, similar issues could surely occur with audio or other
+ * types of systems as well.
+ */
+#define MAX_SIMULATION_SLICE_TIME (1.0 / 60)
 
 
 void* kmodule_execute(KSystem *system, char *identifier) {
@@ -44,11 +57,11 @@ void* kmodule_execute(KSystem *system, char *identifier) {
 					(*m).nextUpdate = nextUpdate;
 					break;
 				}
-				(*m).nextUpdate -= SIMULATION_SLICE_TIME;
+				(*m).nextUpdate -= MAX_SIMULATION_SLICE_TIME;
 				if ((*m).nextUpdate < 0) (*m).nextUpdate = 0;
 				nextUpdate = kmodule_update(system, m);
 				(*m).nextUpdate = nextUpdate;
-				simulatedTime += SIMULATION_SLICE_TIME;
+				simulatedTime += MAX_SIMULATION_SLICE_TIME;
 			}
 		}
 	}

@@ -11,29 +11,24 @@
 #include "timer.h"
 
 
-const double NANOSECOND_DIVISOR = 1000000000;
+typedef struct timespec timespec;
 
 
-// NOTE: Super inaccurate implementation. Only for testing.
 timeState* updateTimeState(timeState *state) {
-	if (state == NULL) state = createTimeState();
+	if (state == NULL) {
+		state = (timeState*) calloc(1, sizeof(timeState));
+		(*state).currentTime = (KTime) time(NULL);
+		(*state).deltaTime = 0;
+	}
+
 	if (state == NULL) return NULL;
 
-	struct timespec tv;
+	timespec tv;
 	if (clock_gettime(CLOCK_MONOTONIC, &tv) != 0) return 0;
 
-	KTime currentTime = (KTime) tv.tv_sec + ((KTime) tv.tv_nsec / NANOSECOND_DIVISOR);
+	KTime currentTime = (KTime) tv.tv_sec + ((KTime) tv.tv_nsec / 1e9);
 	(*state).deltaTime = currentTime - (*state).currentTime;
 	(*state).currentTime = currentTime;
 
-	return state;
-}
-
-
-timeState* createTimeState(void) {
-	timeState *state = calloc(1, sizeof(timeState));
-	if (state == NULL) return NULL;
-	(*state).currentTime = (KTime) time(0);
-	(*state).deltaTime = 0;
 	return state;
 }

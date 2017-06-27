@@ -2,7 +2,7 @@
 #define __KRO_INCLUDED__
 
 
-typedef double KTime;
+typedef long double KTime;
 
 typedef struct {
 	KTime currentTime;
