@@ -1,8 +1,8 @@
-#include <kro.h>
+#include <hap.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "kro_example.h"
+#include "hap_example.h"
 
 
 void* create(KSystem *system) {

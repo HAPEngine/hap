@@ -1,4 +1,4 @@
-PROJECT_NAME := kro
+PROJECT_NAME := hap
 
 BIN_PATH = bin
 LIB_PATH = lib
@@ -22,7 +22,7 @@ else
 endif
 
 SYSTEM_LDFLAGS=
-LDLIBS=-lkro -ldl
+LDLIBS=-l$(PROJECT_NAME) -ldl
 LDFLAGS=-L$(LIB_PATH) $(LDLIBS)
 
 CC := gcc
@@ -53,7 +53,7 @@ RM := rm $(RMFLAGS)
 all: $(CMD_BIN_PATHS) $(MODULE_LIB_PATHS)
 .PHONY: all
 
-bin/kro: $(bin_src_path)/kro.o $(PROJECT_LIBRARY_PATH)
+bin/$(PROJECT_NAME): $(bin_src_path)/$(PROJECT_NAME).o $(PROJECT_LIBRARY_PATH)
 	$(MKDIR) $(BIN_PATH)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(objects) $< -o $@
 
@@ -65,7 +65,7 @@ $(PROJECT_LIBRARY_PATH): $(objects)
 	$(MKDIR) $(LIB_PATH)
 	$(CC) -fPIC -rdynamic -shared $(CFLAGS) $^ -o $@
 
-$(LIB_PATH)/libkro_%.so: $(lib_src_path)/kro_%.c
+$(LIB_PATH)/lib$(PROJECT_NAME)_%.so: $(lib_src_path)/$(PROJECT_NAME)_%.c
 	$(MKDIR) $(LIB_PATH)
 	$(CC) -fPIC -rdynamic -shared $(CFLAGS) $< -o $@
 

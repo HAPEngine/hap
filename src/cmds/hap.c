@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <kro.h>
+#include <hap.h>
 
 int main(int argc, char **argv) {
 	KSystem *system = calloc(1, sizeof(KSystem));

@@ -1,5 +1,5 @@
-#ifndef __KRO_INCLUDED__
-#define __KRO_INCLUDED__
+#ifndef __HAP_INCLUDED__
+#define __HAP_INCLUDED__
 
 
 typedef long double KTime;

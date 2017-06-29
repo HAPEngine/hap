@@ -1,4 +1,4 @@
-kro
+hap
 ===
 
-[![CircleCI](https://circleci.com/gh/monokrome/kro.svg?style=svg)](https://circleci.com/gh/monokrome/kro)
+[![CircleCI](https://circleci.com/gh/monokrome/hap.svg?style=svg)](https://circleci.com/gh/monokrome/hap)
