@@ -2,20 +2,23 @@
 #define __HAP_INCLUDED__
 
 
-typedef long double KTime;
+typedef long double HAPTime;
+
 
 typedef struct {
-	KTime currentTime;
-	KTime deltaTime;
+	HAPTime currentTime;
+	HAPTime deltaTime;
 
 	void *timespec;
 } timeState;
 
+
 typedef struct {
 	timeState *time;
-} KSystem;
+} HAPEngine;
 
-void* kmodule_execute(KSystem *system, char *identifier);
+
+void* hap_module_execute(HAPEngine *engine, char *identifier);
 
 
 #endif

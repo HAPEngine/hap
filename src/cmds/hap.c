@@ -3,7 +3,7 @@
 #include <hap.h>
 
 int main(int argc, char **argv) {
-	KSystem *system = calloc(1, sizeof(KSystem));
+	HAPEngine *engine = calloc(1, sizeof(HAPEngine));
 	short index = 0;
 
 	if (argc <= 1) {
@@ -12,8 +12,8 @@ int main(int argc, char **argv) {
 	}
 
 	for (index=1; index < argc; ++index)
-		kmodule_execute(system, argv[index]);
+		hap_module_execute(engine, argv[index]);
 
-	free(system);
+	free(engine);
 	return 0;
 }

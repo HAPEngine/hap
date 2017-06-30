@@ -17,7 +17,7 @@ typedef struct timespec timespec;
 timeState* updateTimeState(timeState *state) {
 	if (state == NULL) {
 		state = (timeState*) calloc(1, sizeof(timeState));
-		(*state).currentTime = (KTime) time(NULL);
+		(*state).currentTime = (HAPTime) time(NULL);
 		(*state).deltaTime = 0;
 		(*state).timespec = calloc(1, sizeof(timespec));
 	}
@@ -28,7 +28,7 @@ timeState* updateTimeState(timeState *state) {
 
 	if (clock_gettime(CLOCK_MONOTONIC, tv) != 0) return 0;
 
-	KTime currentTime = (KTime) (*tv).tv_sec + ((KTime) (*tv).tv_nsec / (KTime) 1e9);
+	HAPTime currentTime = (HAPTime) (*tv).tv_sec + ((HAPTime) (*tv).tv_nsec / (HAPTime) 1e9);
 	(*state).deltaTime = currentTime - (*state).currentTime;
 	(*state).currentTime = currentTime;
 

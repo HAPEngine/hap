@@ -7,8 +7,10 @@
 #include "timer.h"
 
 
+#define MODULES_PER_LIST_GROUP 16
+
 /**
- * Don't allow simulating frames lower than 60FPS
+ * Avoid allowing simulating frames below 60FPS.
  *
  * If a module is slow to update, the we don't want to get into cases
  * where frames are given large amounts of time between eachother.
@@ -21,26 +23,35 @@
  * Although less common, similar issues could surely occur with audio or other
  * types of systems as well.
  */
-#define MAX_SIMULATION_SLICE_TIME (1.0 / 60)
+#define MINIMUM_FPS 60
+#define MAX_SIMULATION_SLICE_TIME(fps) ((HAPTime)  (1.0 / fps))
 
 
-void* kmodule_execute(KSystem *system, char *identifier) {
+typedef struct moduleList moduleList;
+
+struct moduleList {
+	HAPModule    **modules;
+	moduleList *next;
+};
+
+
+void* hap_module_execute(HAPEngine *engine, char *identifier) {
 	timeState *time;
-	KTime nextUpdate;
-	KTime simulatedTime;
-	KModule *m = kmodule_create(system, identifier);
+	HAPTime nextUpdate;
+	HAPTime simulatedTime;
+	HAPModule *m = hap_module_create(engine, identifier);
 	if (m == NULL) return NULL;
 
-	kmodule_load(system, m);
+	hap_module_load(engine, m);
 
-	if ((*system).time == NULL) (*system).time = updateTimeState((*system).time);
-	if ((*system).time == NULL) return NULL;
+	if ((*engine).time == NULL) (*engine).time = updateTimeState((*engine).time);
+	if ((*engine).time == NULL) return NULL;
 
-	time = (*system).time;
+	time = (*engine).time;
 
 	// TODO: Handle keyboard interrupt?
 	while ((*m).nextUpdate > -1) {
-		updateTimeState((*system).time);
+		updateTimeState((*engine).time);
 
 		simulatedTime = 0;
 		nextUpdate = (*m).nextUpdate;
@@ -57,23 +68,23 @@ void* kmodule_execute(KSystem *system, char *identifier) {
 					(*m).nextUpdate = nextUpdate;
 					break;
 				}
-				(*m).nextUpdate -= MAX_SIMULATION_SLICE_TIME;
+				(*m).nextUpdate -= MAX_SIMULATION_SLICE_TIME(MINIMUM_FPS);
 				if ((*m).nextUpdate < 0) (*m).nextUpdate = 0;
-				nextUpdate = kmodule_update(system, m);
+				nextUpdate = hap_module_update(engine, m);
 				(*m).nextUpdate = nextUpdate;
-				simulatedTime += MAX_SIMULATION_SLICE_TIME;
+				simulatedTime += MAX_SIMULATION_SLICE_TIME(MINIMUM_FPS);
 			}
 		}
 	}
 
-	kmodule_unload(system, m);
-	kmodule_destroy(system, m);
+	hap_module_unload(engine, m);
+	hap_module_destroy(engine, m);
 	return (void*) m;
 }
 
 
-KModule* kmodule_create(KSystem *system, char *identifier) {
-	KModule *module = (KModule*) calloc(1, sizeof(KModule));
+HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
+	HAPModule *module = (HAPModule*) calloc(1, sizeof(HAPModule));
 	if (module == NULL) return NULL;
 
 	(*module).identifier = identifier;
@@ -88,41 +99,41 @@ KModule* kmodule_create(KSystem *system, char *identifier) {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
-	(*module).create = (void* (*)(KSystem* system)) dlsym((*module).ref, "create");
-	(*module).load = (void (*)(KSystem* system, void *state, char *identifier)) dlsym((*module).ref, "load");
-	(*module).update = (KTime (*)(KSystem* system, void *state)) dlsym((*module).ref, "update");
-	(*module).unload = (void (*)(KSystem* system, void *state)) dlsym((*module).ref, "unload");
-	(*module).destroy = (void (*)(KSystem* system, void *state)) dlsym((*module).ref, "destroy");
+	(*module).create = (void* (*)(HAPEngine* engine)) dlsym((*module).ref, "create");
+	(*module).load = (void (*)(HAPEngine* engine, void *state, char *identifier)) dlsym((*module).ref, "load");
+	(*module).update = (HAPTime (*)(HAPEngine* engine, void *state)) dlsym((*module).ref, "update");
+	(*module).unload = (void (*)(HAPEngine* engine, void *state)) dlsym((*module).ref, "unload");
+	(*module).destroy = (void (*)(HAPEngine* engine, void *state)) dlsym((*module).ref, "destroy");
 #pragma GCC diagnostic pop
 
 	if ((*module).create)
-		(*module).state = ((*module).create(system));
+		(*module).state = ((*module).create(engine));
 
 	return module;
 }
 
 
-void kmodule_load(KSystem *system, KModule *module) {
+void hap_module_load(HAPEngine *engine, HAPModule *module) {
 	if ((*module).load == NULL) return;
-	(*module).load(system, (*module).state, (*module).identifier);
+	(*module).load(engine, (*module).state, (*module).identifier);
 }
 
 
-KTime kmodule_update(KSystem *system, KModule *module) {
+HAPTime hap_module_update(HAPEngine *engine, HAPModule *module) {
 	if ((*module).update == NULL) return 0;
-	return (*module).update(system, (*module).state);
+	return (*module).update(engine, (*module).state);
 }
 
 
-void kmodule_unload(KSystem *system, KModule *module) {
+void hap_module_unload(HAPEngine *engine, HAPModule *module) {
 	if ((*module).unload == NULL) return;
-	(*module).unload(system, (*module).state);
+	(*module).unload(engine, (*module).state);
 }
 
 
-void kmodule_destroy(KSystem *system, KModule *module) {
+void hap_module_destroy(HAPEngine *engine, HAPModule *module) {
 	if ((*module).destroy != NULL)
-		(*module).destroy(system, (*module).state);
+		(*module).destroy(engine, (*module).state);
 
 	(*module).state = NULL;
 	dlclose((*module).ref);

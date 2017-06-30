@@ -2,24 +2,24 @@
 #include <hap.h>
 
 
-typedef struct KModule {
-	void* (*create)(KSystem *system);
-	void (*load)(KSystem *system, void *state, char *identifier);
-	KTime (*update)(KSystem *system, void* state);
-	void (*unload)(KSystem *system, void* state);
-	void (*destroy)(KSystem *system, void* state);
+typedef struct HAPModule {
+	void* (*create)(HAPEngine *engine);
+	void (*load)(HAPEngine *engine, void *state, char *identifier);
+	HAPTime (*update)(HAPEngine *engine, void* state);
+	void (*unload)(HAPEngine *engine, void* state);
+	void (*destroy)(HAPEngine *engine, void* state);
 
-	KTime nextUpdate;
+	HAPTime nextUpdate;
 
 	char *identifier;
 	void *ref;
 	void *state;
-} KModule;
+} HAPModule;
 
 
 /** Module lifecycle **/
-KModule* kmodule_create(KSystem *system, char *identifier);
-void kmodule_load(KSystem *system, KModule *module);
-KTime kmodule_update(KSystem *system, KModule *module);
-void kmodule_unload(KSystem *system, KModule *module);
-void kmodule_destroy(KSystem *system, KModule *module);
+HAPModule* hap_module_create(HAPEngine *engine, char *identifier);
+void hap_module_load(HAPEngine *engine, HAPModule *module);
+HAPTime hap_module_update(HAPEngine *engine, HAPModule *module);
+void hap_module_unload(HAPEngine *engine, HAPModule *module);
+void hap_module_destroy(HAPEngine *engine, HAPModule *module);

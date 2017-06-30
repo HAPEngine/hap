@@ -6,8 +6,8 @@ typedef struct {
 } exampleState;
 
 
-extern void* create(KSystem *system);
-extern void load(KSystem *system, exampleState *state, char *identifier);
-extern KTime update(KSystem *system, exampleState *state);
-extern void unload(KSystem *system, exampleState *state);
-extern void destroy(KSystem *system, exampleState *state);
+extern void* create(HAPEngine *engine);
+extern void load(HAPEngine *engine, exampleState *state, char *identifier);
+extern HAPTime update(HAPEngine *engine, exampleState *state);
+extern void unload(HAPEngine *engine, exampleState *state);
+extern void destroy(HAPEngine *engine, exampleState *state);
