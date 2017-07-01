@@ -10,4 +10,4 @@ compile:
 
 test:
   override:
-    - make test
+    - ctest .
