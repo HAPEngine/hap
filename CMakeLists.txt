@@ -5,25 +5,10 @@ PROJECT(hap)
 INCLUDE(CheckCXXCompilerFlag)
 
 
-# Utility function for adding supported compiler flags
-FUNCTION(ENABLE_CXX_COMPILER_FLAG_IF_SUPPORTED FLAG)
-    STRING(FIND "${CMAKE_CXX_FLAGS}" "${FLAG}" FLAG_ALREADY_SET)
-
-    IF(FLAG_ALREADY_SET EQUAL -1)
-        CHECK_CXX_COMPILER_FLAG("${FLAG}" FLAG_SUPPORTED)
-
-        IF (FLAG_SUPPORTED)
-            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAG}" PARENT_SCOPE)
-        ENDIF()
-    ENDIF()
-ENDFUNCTION()
-
-
-# Modify compiler options to be super strict
-ENABLE_CXX_COMPILER_FLAG_IF_SUPPORTED("-Wall")
-ENABLE_CXX_COMPILER_FLAG_IF_SUPPORTED("-Wextra")
-ENABLE_CXX_COMPILER_FLAG_IF_SUPPORTED("-pedantic")
-ENABLE_CXX_COMPILER_FLAG_IF_SUPPORTED("-Wl,--no-as-needed")
+# Modify compiler options to be more strict
+IF(CMAKE_COMPILER_IS_GNUCXX)
+  SET(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -Wl,--no-as-needed")
+ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
 
 # Setup build output directories
