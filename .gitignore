@@ -5,3 +5,5 @@ lib/*
 
 # Build artifacts
 *.o
+/CMake*
+!/CMakeLists.txt

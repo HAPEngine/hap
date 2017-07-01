@@ -3,6 +3,7 @@ dependencies:
 
 compile:
   override:
+    - cmake .
     - make
 
 test:
