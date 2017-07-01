@@ -6,4 +6,6 @@ lib/*
 # Build artifacts
 *.o
 /CMake*
+/Testing/*
 !/CMakeLists.txt
+/Makefile
