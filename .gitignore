@@ -11,6 +11,9 @@ lib/*
 *.sln
 *.dir
 *.db
+*.stamp
+*.depend
+*.cmake
 /x64/*
 /CMake*
 /Testing/*
