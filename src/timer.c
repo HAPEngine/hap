@@ -14,7 +14,10 @@
 typedef struct timespec timespec;
 
 
+
 timeState* updateTimeState(timeState *state) {
+#ifdef OS_Windows
+#else
 	if (state == NULL) {
 		state = (timeState*) calloc(1, sizeof(timeState));
 		(*state).currentTime = (HAPTime) time(NULL);
@@ -31,10 +34,10 @@ timeState* updateTimeState(timeState *state) {
 	HAPTime currentTime = (HAPTime) (*tv).tv_sec + ((HAPTime) (*tv).tv_nsec / (HAPTime) 1e9);
 	(*state).deltaTime = currentTime - (*state).currentTime;
 	(*state).currentTime = currentTime;
+#endif
 
 	return state;
 }
-
 
 void destroyTimeState(timeState *state) {
 	(*state).currentTime = 0;

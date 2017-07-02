@@ -7,8 +7,11 @@
  *
  */
 
+
+#ifndef OS_Windows
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
 
 
 #include <hap.h>
@@ -43,4 +46,6 @@ void unload(HAPEngine *engine, exampleState *state) {
 void destroy(HAPEngine *engine, exampleState *state) {}
 
 
+#ifndef OS_Windows
 #pragma GCC diagnostic pop
+#endif
