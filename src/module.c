@@ -50,7 +50,6 @@ void* hap_module_execute(HAPEngine *engine, char *identifier) {
 
 	time = (*engine).time;
 
-	// TODO: Handle keyboard interrupt?
 	while ((*m).nextUpdate > -1) {
 		updateTimeState((*engine).time);
 
