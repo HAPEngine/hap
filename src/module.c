@@ -1,4 +1,7 @@
-#include <dlfcn.h>
+#ifndef OS_Windows
+	#include <dlfcn.h>
+#endif
+
 #include <hap.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,8 +27,7 @@
  * types of systems as well.
  */
 #define MINIMUM_FPS 60
-#define MAX_SIMULATION_SLICE_TIME(fps) ((HAPTime)  (1.0 / fps))
-
+#define MAX_SIMULATION_SLICE_TIME(fps) ((HAPTime) (1.0 / fps))
 
 typedef struct moduleList moduleList;
 
@@ -33,7 +35,6 @@ struct moduleList {
 	HAPModule    **modules;
 	moduleList *next;
 };
-
 
 void* hap_module_execute(HAPEngine *engine, char *identifier) {
 	timeState *time;
@@ -79,24 +80,35 @@ void* hap_module_execute(HAPEngine *engine, char *identifier) {
 
 	hap_module_unload(engine, m);
 	hap_module_destroy(engine, m);
+
 	return (void*) m;
 }
 
-
 HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
-	HAPModule *module = (HAPModule*) calloc(1, sizeof(HAPModule));
+	HAPModule *module = (HAPModule*)calloc(1, sizeof(HAPModule));
 	if (module == NULL) return NULL;
-
 	(*module).identifier = identifier;
+
+#ifdef OS_Windows
+	(*module).ref = (void*) LoadLibrary((*module).identifier);
+#else
 	(*module).ref = dlopen((*module).identifier, RTLD_NOW);
+#endif
 
 	if ((*module).ref == NULL) {
-		printf("Failed to load module: %s\nError was: %s\n", (*module).identifier, dlerror());
+		printf("Failed to load module: %s\n", (*module).identifier);
 		free(module);
 		exit(EXIT_FAILURE);
 		return NULL;
 	}
 
+#ifdef OS_Windows
+	(*module).create = (void* (*)(HAPEngine* engine)) GetProcAddress((*module).ref, "create");
+	(*module).load = (void(*)(HAPEngine* engine, void *state, char *identifier)) GetProcAddress((*module).ref, "load");
+	(*module).update = (HAPTime(*)(HAPEngine* engine, void *state)) GetProcAddress((*module).ref, "update");
+	(*module).unload = (void(*)(HAPEngine* engine, void *state)) GetProcAddress((*module).ref, "unload");
+	(*module).destroy = (void(*)(HAPEngine* engine, void *state)) GetProcAddress((*module).ref, "destroy");
+#else
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
 	(*module).create = (void* (*)(HAPEngine* engine)) dlsym((*module).ref, "create");
@@ -108,26 +120,33 @@ HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
 
 	if ((*module).create)
 		(*module).state = ((*module).create(engine));
+#endif
 
 	return module;
 }
-
 
 void hap_module_load(HAPEngine *engine, HAPModule *module) {
 	if ((*module).load == NULL) return;
 	(*module).load(engine, (*module).state, (*module).identifier);
 }
 
-
 HAPTime hap_module_update(HAPEngine *engine, HAPModule *module) {
 	if ((*module).update == NULL) return 0;
 	return (*module).update(engine, (*module).state);
 }
 
-
 void hap_module_unload(HAPEngine *engine, HAPModule *module) {
 	if ((*module).unload == NULL) return;
 	(*module).unload(engine, (*module).state);
+}
+
+void _module_close_ref(HAPModule *module) {
+#ifdef OS_Windows
+#else
+	dlclose((*module).ref);
+#endif
+
+	(*module).ref = NULL;
 }
 
 
@@ -136,6 +155,7 @@ void hap_module_destroy(HAPEngine *engine, HAPModule *module) {
 		(*module).destroy(engine, (*module).state);
 
 	(*module).state = NULL;
-	dlclose((*module).ref);
+
+	_module_close_ref(module);
 	free(module);
 }
