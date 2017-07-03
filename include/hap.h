@@ -17,7 +17,12 @@ typedef struct {
 } timeState;
 
 typedef struct {
+	char *name;
+
 	timeState *time;
+
+	int  *argc;
+	char **argvp;
 } HAPEngine;
 
 void* hap_module_execute(HAPEngine *engine, char *identifier);

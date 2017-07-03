@@ -4,6 +4,12 @@
 
 int main(int argc, char **argv) {
 	HAPEngine *engine = calloc(1, sizeof(HAPEngine));
+	if (engine == NULL) return 1;
+
+	(*engine).name = "hap";
+	(*engine).argc = &argc;
+	(*engine).argvp = argv;
+
 	short index = 0;
 
 	if (argc <= 1) {
