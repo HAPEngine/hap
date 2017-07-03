@@ -1,5 +1,5 @@
 #ifndef OS_Windows
-	#include <dlfcn.h>
+#include <dlfcn.h>
 #endif
 
 #include <hap.h>
@@ -41,11 +41,13 @@ void* hap_module_execute(HAPEngine *engine, char *identifier) {
 	HAPTime nextUpdate;
 	HAPTime simulatedTime;
 	HAPModule *m = hap_module_create(engine, identifier);
+
 	if (m == NULL) return NULL;
 
 	hap_module_load(engine, m);
 
 	if ((*engine).time == NULL) (*engine).time = updateTimeState((*engine).time);
+
 	if ((*engine).time == NULL) return NULL;
 
 	time = (*engine).time;
@@ -62,14 +64,18 @@ void* hap_module_execute(HAPEngine *engine, char *identifier) {
 			if ((*m).nextUpdate < 0) {
 				(*m).nextUpdate = 0;
 			}
+
 		} else {
 			while ((simulatedTime + (*m).nextUpdate) < (*time).deltaTime) {
 				if (nextUpdate < 0) {
 					(*m).nextUpdate = nextUpdate;
 					break;
 				}
+
 				(*m).nextUpdate -= MAX_SIMULATION_SLICE_TIME(MINIMUM_FPS);
+
 				if ((*m).nextUpdate < 0) (*m).nextUpdate = 0;
+
 				nextUpdate = hap_module_update(engine, m);
 				(*m).nextUpdate = nextUpdate;
 				simulatedTime += MAX_SIMULATION_SLICE_TIME(MINIMUM_FPS);
@@ -85,7 +91,9 @@ void* hap_module_execute(HAPEngine *engine, char *identifier) {
 
 HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
 	HAPModule *module = (HAPModule*)calloc(1, sizeof(HAPModule));
+
 	if (module == NULL) return NULL;
+
 	(*module).identifier = identifier;
 
 #ifdef OS_Windows
@@ -119,6 +127,7 @@ HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
 
 	if ((*module).create)
 		(*module).state = ((*module).create(engine));
+
 #endif
 
 	return module;
@@ -126,16 +135,19 @@ HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
 
 void hap_module_load(HAPEngine *engine, HAPModule *module) {
 	if ((*module).load == NULL) return;
+
 	(*module).load(engine, (*module).state, (*module).identifier);
 }
 
 HAPTime hap_module_update(HAPEngine *engine, HAPModule *module) {
 	if ((*module).update == NULL) return 0;
+
 	return (*module).update(engine, (*module).state);
 }
 
 void hap_module_unload(HAPEngine *engine, HAPModule *module) {
 	if ((*module).unload == NULL) return;
+
 	(*module).unload(engine, (*module).state);
 }
 

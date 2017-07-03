@@ -20,15 +20,17 @@
 #include "x11.h"
 
 
-GLXContext* create(HAPEngine *engine) {
+void* create(HAPEngine *engine) {
 	(void)engine; // Mark variable as used to avoid compiler warnings
 
-	if (create_window(640, 480) == NULL) {
-		fprintf(stderr, "Could not create an X11 window.\n");
+	void *window = window_create(640, 480);
+
+	if (window == NULL) {
+		fprintf(stderr, "Could not create a window.\n");
 		return NULL;
 	}
 
-	return NULL;
+	return window;
 }
 
 void load(HAPEngine *engine, void *state, char *identifier) {
@@ -41,8 +43,11 @@ void load(HAPEngine *engine, void *state, char *identifier) {
 }
 
 HAPTime update(HAPEngine *engine, void *state) {
+	printf("Next\n");
+
 	(void)engine;      // Mark variable as used to avoid compiler warnings
-	(void)state;       // Mark variable as used to avoid compiler warnings
+
+	window_update(state);
 
 	return 1;
 }
@@ -53,6 +58,8 @@ void unload(HAPEngine *engine, void *state) {
 }
 
 void destroy(HAPEngine *engine, void *state) {
+	window_close(state);
+
 	(void)engine;      // Mark variable as used to avoid compiler warnings
 	(void)state;       // Mark variable as used to avoid compiler warnings
 }

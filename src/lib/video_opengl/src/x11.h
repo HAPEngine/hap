@@ -6,7 +6,9 @@
 #include <GL/glu.h>
 
 
-void* create_window(const int width, const int height);
+void* window_create(const int width, const int height);
+void window_update(void* window);
+void window_close(void* window);
 
 
 #endif

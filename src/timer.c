@@ -4,9 +4,9 @@
 #endif
 
 #ifdef OS_Windows
-	#include <sys/timeb.h>
+#include <sys/timeb.h>
 #else
-	#include <time.h>
+#include <time.h>
 #endif
 
 #include <stdio.h>
@@ -25,6 +25,7 @@ timeState* updateTimeState(timeState *state) {
 
 	if (state == NULL) {
 		state = (timeState*) calloc(1, sizeof(timeState));
+
 		if (state == NULL) return NULL;
 
 		(*state).timespec = NULL;
@@ -33,8 +34,10 @@ timeState* updateTimeState(timeState *state) {
 	}
 
 #else
+
 	if (state == NULL) {
 		state = (timeState*) calloc(1, sizeof(timeState));
+
 		if (state == NULL) return NULL;
 
 		(*state).currentTime = (HAPTime) time(NULL);
@@ -43,6 +46,7 @@ timeState* updateTimeState(timeState *state) {
 	}
 
 	timespec *tv = (timespec*) (*state).timespec;
+
 	if (tv == NULL) return NULL;
 
 	if (clock_gettime(CLOCK_MONOTONIC, tv) != 0) return 0;

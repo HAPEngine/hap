@@ -18,9 +18,7 @@
 struct GLWindow {
 	Display                *display;
 	Window                 root;
-	XVisualInfo            *visualInfo;
 	Colormap               colormap;
-	XSetWindowAttributes   setAttributes;
 	Window                 ref;
 	XWindowAttributes      attributes;
 	XEvent                 xev;
@@ -37,8 +35,10 @@ GLint glAttributes[] = {
 };
 
 
-void* create_window(const int width, const int height) {
+void* window_create(const int width, const int height) {
 	GLWindow* window = (GLWindow*) calloc(1, sizeof(GLWindow*));
+	XSetWindowAttributes setAttributes;
+	XVisualInfo            *visualInfo;
 
 	if (window == NULL) {
 		fprintf(stderr, "Could not allocate memory to create a window.");
@@ -54,36 +54,44 @@ void* create_window(const int width, const int height) {
 	}
 
 	(*window).root = DefaultRootWindow((*window).display);
-	(*window).visualInfo = glXChooseVisual((*window).display, 0, glAttributes);
 
+	if (!(*window).root) {
+		fprintf(stderr, "Could not find root window.\n");
+		(*window).root = DefaultRootWindow((*window).display);
+	}
 
-	if ((*window).visualInfo == NULL) {
+	visualInfo = glXChooseVisual((*window).display, 0, glAttributes);
+
+	if (visualInfo == NULL) {
 		fprintf(stderr, "Couldn't get GLX VisualInfo for XServer.\n");
 		return NULL;
 	}
 
-	Colormap colormap = XCreateColormap(
-	                        (*window).display, (*window).root,
-	                        (*(*window).visualInfo).visual,
-	                        AllocNone
-	                    );
-
-	(*window).setAttributes.event_mask = ExposureMask | KeyPressMask;
-	(*window).setAttributes.colormap = colormap;
+	setAttributes.event_mask = ExposureMask | KeyPressMask;
+	setAttributes.colormap = XCreateColormap(
+	                             (*window).display, (*window).root,
+	                             (*visualInfo).visual,
+	                             AllocNone
+	                         );
 
 
 	(*window).ref = XCreateWindow(
 	                    (*window).display, (*window).root,
-	                    0, 0, width, height, 0,
-	                    (*(*window).visualInfo).depth,
+	                    10, 10, width, height, 0,
+	                    (*visualInfo).depth,
 	                    InputOutput,
-	                    (*(*window).visualInfo).visual,
+	                    (*visualInfo).visual,
 	                    CWColormap | CWEventMask,
-	                    &(*window).setAttributes
+	                    &setAttributes
 	                );
 
-	/* XMapWindow((*window).display, (*window).ref); */
-	/* XStoreName((*window).display, (*window).ref, "HAP"); */
+	XMapWindow((*window).display, (*window).ref);
+	XStoreName((*window).display, (*window).ref, "HAP");
+
+	(*window).glContext = glXCreateContext(
+	                          (*window).display, visualInfo,
+	                          NULL, GL_TRUE
+	                      );
 
 	glXMakeCurrent(
 	    (*window).display, (*window).ref,
@@ -91,6 +99,16 @@ void* create_window(const int width, const int height) {
 	);
 
 	return (void*) window;
+}
+
+
+void window_update(void* window) {
+	GLWindow* glw = (Window*) window;
+	glXMakeCurrent((*glw).display, (*glw).ref, (*glw).glContext);
+}
+
+
+void window_close(void* window) {
 }
 
 
