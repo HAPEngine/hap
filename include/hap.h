@@ -5,6 +5,8 @@
 #include <Windows.h>
 #endif
 
+#include <stdlib.h>
+
 typedef long double HAPTime;
 
 typedef struct {
