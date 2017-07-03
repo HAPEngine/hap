@@ -2,7 +2,8 @@
  * OpenGL module driver for HAP.
  */
 
-#include <stdlib.h>
+#include <GL/freeglut.h>
+
 #include <hap.h>
 
 void* create(HAPEngine *engine) { return NULL; }
