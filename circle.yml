@@ -2,6 +2,10 @@ dependencies:
   override:
     - pip install --upgrade pip
     - pip install cmake
+    - sudo apt-get install -yy binutils-gold
+    - sudo apt-get install -yy freeglut3 freeglut3-dev
+    - sudo apt-get install -yy libopenal1 libopenal-dev
+    - sudo apt-get install -yy libglew-dev
 
 compile:
   override:
