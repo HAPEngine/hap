@@ -4,21 +4,22 @@ lib/*
 
 
 # Build artifacts
-*.o
-*.vcxproj
+*.cmake
+*.db
+*.depend
+*.dir
 *.filters
+*.o
 *.opendb
 *.sln
-*.dir
-*.db
 *.stamp
-*.depend
-*.cmake
-/x64/*
-/CMake*
-/Testing/*
-!/CMakeLists.txt
-/Makefile
+*.vcxproj
+CMake*
+CMakeFiles
+Makefile
+Testing
+x64
+!CMakeLists.txt
 
 
 # Non-git hidden files
