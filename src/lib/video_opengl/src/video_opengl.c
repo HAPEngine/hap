@@ -34,7 +34,8 @@ void* create(HAPEngine *engine) {
 }
 
 void load(HAPEngine *engine, void *state, char *identifier) {
-	glEnable(GL_COLOR_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+
 	glClearColor(1.0, 1.0, 1.0, 0.0);
 	glMatrixMode(GL_PROJECTION);
 
