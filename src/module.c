@@ -103,7 +103,9 @@ HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
 #endif
 
 	if ((*module).ref == NULL) {
-		printf("Failed to load module: %s\n", (*module).identifier);
+		fprintf(stderr, "Failed to load module: %s\n", (*module).identifier);
+		fprintf(stderr, "Error was: %s\n\n", dlerror());
+
 		hap_module_destroy(engine, module);
 		exit(EXIT_FAILURE);
 		return NULL;
