@@ -106,26 +106,37 @@ void* window_create(const int width, const int height) {
 
 int window_update(void* state) {
 	XEvent event;
+	XWindowAttributes attributes;
 
 	GLWindow *window = (GLWindow*) state;
 
-	if (window == NULL) {
-		return -1;
-	}
+	if (window == NULL) return -1;
 
-	while (XPending((*window).display)) {
+	while (XEventsQueued((*window).display, QueuedAfterFlush)) {
 		XNextEvent((*window).display, &event);
 
-		if (event.type == ClientMessage) {
-			if ((Atom)event.xclient.data.l[0] == WM_DELETE_WINDOW) {
-				return -1;
-			}
+		switch (event.type) {
+		case ClientMessage:
+			if ((Atom)event.xclient.data.l[0] != WM_DELETE_WINDOW) break;
+
+			return -1;
+			break;
+
+		case Expose:
+			XGetWindowAttributes((*window).display, (*window).ref, &attributes);
+			glViewport(0, 0, attributes.width, attributes.height);
+			break;
 		}
 	}
 
 	return 0;
 }
 
+
+void window_render(void *state) {
+	GLWindow *window = (GLWindow*) state;
+	glXSwapBuffers((*window).display, (*window).ref);
+}
 
 void window_close(void* state) {
 	GLWindow *window = (GLWindow*) state;

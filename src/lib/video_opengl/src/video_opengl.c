@@ -34,27 +34,30 @@ void* create(HAPEngine *engine) {
 }
 
 void load(HAPEngine *engine, void *state, char *identifier) {
-	glEnable(GL_DEPTH_TEST);
-
-	glClearColor(1.0, 1.0, 1.0, 0.0);
-	glMatrixMode(GL_PROJECTION);
-
 	(void)engine;      // Mark variable as used to avoid compiler warnings
 	(void)state;       // Mark variable as used to avoid compiler warnings
 	(void)identifier;  // Mark variable as used to avoid compiler warnings
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(-1., 1., -1., 1., 1., 20.);
+
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluLookAt(0., 0., 10., 0., 0., 0., 0., 1., 0.);
+
+	glEnable(GL_DEPTH_TEST);
 }
 
 HAPTime update(HAPEngine *engine, void *state) {
 	(void)engine;      // Mark variable as used to avoid compiler warnings
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	if (window_update(state) < 0) return -1;
 
-	if (window_update(state) >= 0) {
-		return 0.1;
-
-	} else {
-		return -1;
-	}
+	window_render(state);
+	return 0;
 }
 
 void unload(HAPEngine *engine, void *state) {
