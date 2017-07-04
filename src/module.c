@@ -29,12 +29,12 @@
 #define MINIMUM_FPS 60
 #define MAX_SIMULATION_SLICE_TIME(fps) ((HAPTime) (1.0 / fps))
 
-typedef struct moduleList moduleList;
+/* struct moduleList { */
+/* 	HAPModule    **modules; */
+/* 	moduleList *next; */
+/* }; */
 
-struct moduleList {
-	HAPModule    **modules;
-	moduleList *next;
-};
+/* typedef struct moduleList moduleList; */
 
 void* hap_module_execute(HAPEngine *engine, char *identifier) {
 	timeState *time;
@@ -90,7 +90,7 @@ void* hap_module_execute(HAPEngine *engine, char *identifier) {
 }
 
 HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
-	HAPModule *module = (HAPModule*)calloc(1, sizeof(HAPModule));
+	HAPModule *module = (HAPModule*) calloc(1, sizeof(HAPModule));
 
 	if (module == NULL) return NULL;
 
@@ -104,7 +104,7 @@ HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
 
 	if ((*module).ref == NULL) {
 		printf("Failed to load module: %s\n", (*module).identifier);
-		free(module);
+		hap_module_destroy(engine, module);
 		exit(EXIT_FAILURE);
 		return NULL;
 	}
@@ -151,13 +151,13 @@ void hap_module_unload(HAPEngine *engine, HAPModule *module) {
 	(*module).unload(engine, (*module).state);
 }
 
-void _module_close_ref(HAPModule *module) {
+void _module_close_ref(void* ref) {
+	if (ref == NULL) return;
+
 #ifdef OS_Windows
 #else
-	dlclose((*module).ref);
+	dlclose(ref);
 #endif
-
-	(*module).ref = NULL;
 }
 
 
@@ -165,8 +165,10 @@ void hap_module_destroy(HAPEngine *engine, HAPModule *module) {
 	if ((*module).destroy != NULL)
 		(*module).destroy(engine, (*module).state);
 
-	(*module).state = NULL;
+	_module_close_ref((*module).ref);
 
-	_module_close_ref(module);
+	(*module).state   = NULL;
+	(*module).ref = NULL;
+
 	free(module);
 }

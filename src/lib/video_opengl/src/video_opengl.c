@@ -34,6 +34,7 @@ void* create(HAPEngine *engine) {
 }
 
 void load(HAPEngine *engine, void *state, char *identifier) {
+	glEnable(GL_COLOR_BUFFER_BIT);
 	glClearColor(1.0, 1.0, 1.0, 0.0);
 	glMatrixMode(GL_PROJECTION);
 
@@ -43,13 +44,16 @@ void load(HAPEngine *engine, void *state, char *identifier) {
 }
 
 HAPTime update(HAPEngine *engine, void *state) {
-	printf("Next\n");
-
 	(void)engine;      // Mark variable as used to avoid compiler warnings
 
-	window_update(state);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	return 1;
+	if (window_update(state) >= 0) {
+		return 0.1;
+
+	} else {
+		return -1;
+	}
 }
 
 void unload(HAPEngine *engine, void *state) {
@@ -58,8 +62,7 @@ void unload(HAPEngine *engine, void *state) {
 }
 
 void destroy(HAPEngine *engine, void *state) {
-	window_close(state);
-
 	(void)engine;      // Mark variable as used to avoid compiler warnings
-	(void)state;       // Mark variable as used to avoid compiler warnings
+
+	window_close(state);
 }

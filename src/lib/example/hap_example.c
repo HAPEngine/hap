@@ -22,28 +22,39 @@
 
 
 void* create(HAPEngine *engine) {
-	exampleState *state = (exampleState*) malloc(sizeof(exampleState));
-	return (void*) state;
+	(void)engine;      // Mark variable as used to avoid compiler warnings
+
+	return (void*) malloc(sizeof(exampleState));
 }
 
 
 void load(HAPEngine *engine, exampleState *state, char *identifier) {
+	(void)engine;      // Mark variable as used to avoid compiler warnings
+	(void)identifier;  // Mark variable as used to avoid compiler warnings
+
 	(*state).name = identifier;
 }
 
 
 HAPTime update(HAPEngine *engine, exampleState *state) {
+	(void)engine;      // Mark variable as used to avoid compiler warnings
+	(void)state;       // Mark variable as used to avoid compiler warnings
+
 	// Update this module no more often than once every quarter second
 	return (HAPTime) 0.25;
 }
 
 
 void unload(HAPEngine *engine, exampleState *state) {
-	printf("Unloading %s\n", (*state).name);
+	(void)engine;      // Mark variable as used to avoid compiler warnings
+	(void)state;       // Mark variable as used to avoid compiler warnings
 }
 
 
-void destroy(HAPEngine *engine, exampleState *state) {}
+void destroy(HAPEngine *engine, exampleState *state) {
+	(void)engine;      // Mark variable as used to avoid compiler warnings
+	(void)state;       // Mark variable as used to avoid compiler warnings
+}
 
 
 #ifndef OS_Windows

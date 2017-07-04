@@ -7,7 +7,7 @@
 
 
 void* window_create(const int width, const int height);
-void window_update(void* window);
+int window_update(void* window);
 void window_close(void* window);
 
 

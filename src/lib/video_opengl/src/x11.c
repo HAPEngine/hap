@@ -1,6 +1,7 @@
 #ifdef OS_Linux
 
 
+#include <stdbool.h>
 #include <stdio.h>
 
 #include <GL/gl.h>
@@ -17,16 +18,15 @@
 
 struct GLWindow {
 	Display                *display;
-	Window                 root;
-	Colormap               colormap;
 	Window                 ref;
-	XWindowAttributes      attributes;
-	XEvent                 xev;
 	GLXContext             glContext;
 };
 
 
 typedef struct GLWindow GLWindow;
+
+
+Atom                   WM_DELETE_WINDOW;
 
 
 GLint glAttributes[] = {
@@ -37,8 +37,9 @@ GLint glAttributes[] = {
 
 void* window_create(const int width, const int height) {
 	GLWindow* window = (GLWindow*) calloc(1, sizeof(GLWindow*));
+	Window root;
 	XSetWindowAttributes setAttributes;
-	XVisualInfo            *visualInfo;
+	XVisualInfo *visualInfo;
 
 	if (window == NULL) {
 		fprintf(stderr, "Could not allocate memory to create a window.");
@@ -53,11 +54,11 @@ void* window_create(const int width, const int height) {
 		return NULL;
 	}
 
-	(*window).root = DefaultRootWindow((*window).display);
+	root = DefaultRootWindow((*window).display);
 
-	if (!(*window).root) {
+	if (!root) {
 		fprintf(stderr, "Could not find root window.\n");
-		(*window).root = DefaultRootWindow((*window).display);
+		root = DefaultRootWindow((*window).display);
 	}
 
 	visualInfo = glXChooseVisual((*window).display, 0, glAttributes);
@@ -69,14 +70,14 @@ void* window_create(const int width, const int height) {
 
 	setAttributes.event_mask = ExposureMask | KeyPressMask;
 	setAttributes.colormap = XCreateColormap(
-	                             (*window).display, (*window).root,
+	                             (*window).display, root,
 	                             (*visualInfo).visual,
 	                             AllocNone
 	                         );
 
 
 	(*window).ref = XCreateWindow(
-	                    (*window).display, (*window).root,
+	                    (*window).display, root,
 	                    10, 10, width, height, 0,
 	                    (*visualInfo).depth,
 	                    InputOutput,
@@ -86,7 +87,8 @@ void* window_create(const int width, const int height) {
 	                );
 
 	XMapWindow((*window).display, (*window).ref);
-	XStoreName((*window).display, (*window).ref, "HAP");
+	WM_DELETE_WINDOW = XInternAtom((*window).display, "WM_DELETE_WINDOW", false);
+	XSetWMProtocols((*window).display, (*window).ref, &WM_DELETE_WINDOW, 1);
 
 	(*window).glContext = glXCreateContext(
 	                          (*window).display, visualInfo,
@@ -102,13 +104,40 @@ void* window_create(const int width, const int height) {
 }
 
 
-void window_update(void* window) {
-	GLWindow* glw = (Window*) window;
-	glXMakeCurrent((*glw).display, (*glw).ref, (*glw).glContext);
+int window_update(void* state) {
+	XEvent event;
+
+	GLWindow *window = (GLWindow*) state;
+
+	if (window == NULL) {
+		return -1;
+	}
+
+	while (XPending((*window).display)) {
+		XNextEvent((*window).display, &event);
+
+		if (event.type == ClientMessage) {
+			if ((Atom)event.xclient.data.l[0] == WM_DELETE_WINDOW) {
+				return -1;
+			}
+		}
+	}
+
+	return 0;
 }
 
 
-void window_close(void* window) {
+void window_close(void* state) {
+	GLWindow *window = (GLWindow*) state;
+
+	glXMakeCurrent((*window).display, None, NULL);
+	glXDestroyContext((*window).display, (*window).glContext);
+	(*window).glContext = 0;
+
+	XDestroyWindow((*window).display, (*window).ref);
+	XCloseDisplay((*window).display);
+
+	free(window);
 }
 
 
