@@ -18,8 +18,7 @@
 typedef struct timespec timespec;
 
 
-
-timeState* updateTimeState(timeState *state) {
+timeState* hap_timer_update(timeState *state) {
 #ifdef OS_Windows
 	HAPTime currentTime = (HAPTime) (GetTickCount64() / 1000);
 
@@ -29,8 +28,10 @@ timeState* updateTimeState(timeState *state) {
 		if (state == NULL) return NULL;
 
 		(*state).timespec = NULL;
-		(*state).currentTime = currentTime;
-		(*state).deltaTime = 0;
+		(*state).currentTime = 0;
+		(*state).timeDelta = 0;
+
+		hap_timer_update(state);
 	}
 
 #else
@@ -40,9 +41,11 @@ timeState* updateTimeState(timeState *state) {
 
 		if (state == NULL) return NULL;
 
-		(*state).currentTime = (HAPTime) time(NULL);
-		(*state).deltaTime = 0;
+		(*state).currentTime = 0;
+		(*state).timeDelta = 0;
 		(*state).timespec = calloc(1, sizeof(timespec));
+
+		hap_timer_update(state);
 	}
 
 	timespec *tv = (timespec*) (*state).timespec;
@@ -54,15 +57,15 @@ timeState* updateTimeState(timeState *state) {
 	HAPTime currentTime = (HAPTime) (*tv).tv_sec + ((HAPTime) (*tv).tv_nsec / (HAPTime) 1e9);
 #endif
 
-	(*state).deltaTime = currentTime - (*state).currentTime;
+	(*state).timeDelta = currentTime - (*state).currentTime;
 	(*state).currentTime = currentTime;
 
 	return state;
 }
 
-void destroyTimeState(timeState *state) {
+void hap_timer_destroy(timeState *state) {
 	(*state).currentTime = 0;
-	(*state).deltaTime = 0;
+	(*state).timeDelta = 0;
 
 	if ((*state).timespec != NULL) {
 		free((*state).timespec);

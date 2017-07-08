@@ -54,7 +54,7 @@ void load(HAPEngine *engine, void *state, char *identifier) {
 HAPTime update(HAPEngine *engine, void *state) {
 	if (window_update(state) < 0) return -1;
 
-	float color = (sin((*(*engine).time).currentTime / 2) / 2) + .5f;
+	float color = (sin((*(*engine).time).currentTime) / 2) + .5f;
 
 	glClearColor((color / 2) * .7f, color * .3f, color * .7f, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

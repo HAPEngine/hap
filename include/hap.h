@@ -11,7 +11,7 @@ typedef long double HAPTime;
 
 typedef struct {
 	HAPTime currentTime;
-	HAPTime deltaTime;
+	HAPTime timeDelta;
 
 	void *timespec;
 } timeState;
@@ -25,6 +25,8 @@ typedef struct {
 	char **argvp;
 } HAPEngine;
 
-void* hap_module_execute(HAPEngine *engine, char *identifier);
+HAPEngine* hap_engine_create();
+void* hap_module_execute(HAPEngine *engine, const short numModules, char *identifiers[]);
+void hap_engine_destroy(HAPEngine* engine);
 
 #endif

@@ -3,6 +3,7 @@
 #endif
 
 #include <hap.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -27,66 +28,103 @@
  * types of systems as well.
  */
 #define MINIMUM_FPS 60
-#define MAX_SIMULATION_SLICE_TIME(fps) ((HAPTime) (1.0 / fps))
+#define GET_MAX_SIMULATION_FRAME_TIME(fps) ((HAPTime) (1.0 / fps))
 
-/* struct moduleList { */
-/* 	HAPModule    **modules; */
-/* 	moduleList *next; */
-/* }; */
+#ifndef MAX_SIMULATION_FRAME_TIME
+#define MAX_SIMULATION_FRAME_TIME GET_MAX_SIMULATION_FRAME_TIME(MINIMUM_FPS)
+#endif
 
-/* typedef struct moduleList moduleList; */
+typedef struct moduleList moduleList;
 
-void* hap_module_execute(HAPEngine *engine, char *identifier) {
-	timeState *time;
-	HAPTime nextUpdate;
+struct moduleList {
+	HAPModule    *module;
+
+	moduleList *next;
+};
+
+HAPModule* _hap_module_update_loop(HAPEngine *engine, short numModules, HAPModule **modules) {
+	short index;
+
 	HAPTime simulatedTime;
-	HAPModule *m = hap_module_create(engine, identifier);
+	HAPTime simulatedTimeDelta;
 
-	if (m == NULL) return NULL;
+	HAPTime actualTime;
+	HAPTime actualTimeDelta;
 
-	hap_module_load(engine, m);
+	for (;;) {
+		simulatedTime = (*(*engine).time).currentTime;
+		simulatedTimeDelta = (*(*engine).time).timeDelta;
 
-	if ((*engine).time == NULL) (*engine).time = updateTimeState((*engine).time);
+		hap_timer_update((*engine).time);
 
-	if ((*engine).time == NULL) return NULL;
+		actualTime = (*(*engine).time).currentTime;
+		actualTimeDelta = (*(*engine).time).timeDelta;
 
-	time = (*engine).time;
+		while (simulatedTime < actualTime) {
+			if (simulatedTimeDelta > MAX_SIMULATION_FRAME_TIME)
+				simulatedTimeDelta = MAX_SIMULATION_FRAME_TIME;
 
-	while ((*m).nextUpdate > -1) {
-		updateTimeState((*engine).time);
+			(*(*engine).time).currentTime = simulatedTime;
+			(*(*engine).time).timeDelta = simulatedTimeDelta;
 
-		simulatedTime = 0;
-		nextUpdate = (*m).nextUpdate;
+			for (index = 0; index < numModules; ++index) {
+				if ((*modules[index]).nextUpdate > simulatedTime) continue;
 
-		if ((*m).nextUpdate) {
-			(*m).nextUpdate -= (*time).deltaTime;
+				(*modules[index]).nextUpdate = hap_module_update(engine, modules[index]);
 
-			if ((*m).nextUpdate < 0) {
-				(*m).nextUpdate = 0;
+				if ((*modules[index]).nextUpdate < 0) return modules[index];
+
+				(*modules[index]).nextUpdate += simulatedTime;
 			}
 
-		} else {
-			while ((simulatedTime + (*m).nextUpdate) < (*time).deltaTime) {
-				if (nextUpdate < 0) {
-					(*m).nextUpdate = nextUpdate;
-					break;
-				}
+			(*(*engine).time).currentTime = actualTime;
 
-				(*m).nextUpdate -= MAX_SIMULATION_SLICE_TIME(MINIMUM_FPS);
+			simulatedTime += simulatedTimeDelta;
 
-				if ((*m).nextUpdate < 0) (*m).nextUpdate = 0;
-
-				nextUpdate = hap_module_update(engine, m);
-				(*m).nextUpdate = nextUpdate;
-				simulatedTime += MAX_SIMULATION_SLICE_TIME(MINIMUM_FPS);
-			}
+			simulatedTimeDelta = fmod((actualTime - simulatedTime), MAX_SIMULATION_FRAME_TIME);
 		}
 	}
 
-	hap_module_unload(engine, m);
-	hap_module_destroy(engine, m);
+	return NULL;
+}
 
-	return (void*) m;
+void* hap_module_execute(HAPEngine *engine, const short numModules, char *identifiers[]) {
+	HAPTime nextUpdate;
+	short index;
+	timeState *time;
+
+	HAPModule **modules = (HAPModule**) calloc(numModules, sizeof(HAPModule*));
+
+	for (index = 0; index < numModules; ++index) {
+		modules[index] = hap_module_create(engine, identifiers[index]);
+
+		// Creating a module failed, so destroy previously created ones
+		if (modules[index] == NULL) {
+			--index;
+
+			for (; index >= 0; --index) {
+				hap_module_destroy(engine, modules[index]);
+				modules[index] = NULL;
+			}
+
+			return NULL;
+		}
+	}
+
+	for (index = 0; index < numModules; ++index) {
+		hap_module_load(engine, modules[index]);
+	}
+
+
+	time = (*engine).time;
+
+	_hap_module_update_loop(engine, numModules, modules);
+
+	for (index = 0; index < numModules; ++index) hap_module_unload(engine, modules[index]);
+
+	for (index = 0; index < numModules; ++index) hap_module_destroy(engine, modules[index]);
+
+	return (void*) modules;
 }
 
 HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
@@ -95,6 +133,7 @@ HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
 	if (module == NULL) return NULL;
 
 	(*module).identifier = identifier;
+	(*module).nextUpdate = 0;
 
 #ifdef OS_Windows
 	(*module).ref = (void*) LoadLibrary((*module).identifier);
@@ -156,8 +195,7 @@ void hap_module_unload(HAPEngine *engine, HAPModule *module) {
 void _module_close_ref(void* ref) {
 	if (ref == NULL) return;
 
-#ifdef OS_Windows
-#else
+#ifndef OS_Windows
 	dlclose(ref);
 #endif
 }

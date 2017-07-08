@@ -1,5 +1,5 @@
 #include <hap.h>
 
 
-timeState* updateTimeState(timeState *state);
-void destroyTimeState(timeState *state);
+timeState* hap_timer_update(timeState *state);
+void hap_timer_destroy(timeState *state);
