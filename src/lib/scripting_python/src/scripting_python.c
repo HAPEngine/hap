@@ -19,7 +19,7 @@ HAPTime update(HAPEngine *engine, void *state) {
 	(void)engine;
 	(void)state;
 
-	return -1;
+	return 0;
 }
 
 
