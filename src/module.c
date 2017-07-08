@@ -6,6 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "module.h"
 #include "timer.h"
@@ -34,6 +35,10 @@
 #define MAX_SIMULATION_FRAME_TIME GET_MAX_SIMULATION_FRAME_TIME(MINIMUM_FPS)
 #endif
 
+#ifndef MIN_SIMULATION_FRAME_TIME
+#define MIN_SIMULATION_FRAME_TIME GET_MAX_SIMULATION_FRAME_TIME(64)
+#endif
+
 typedef struct moduleList moduleList;
 
 struct moduleList {
@@ -60,6 +65,15 @@ HAPModule* _hap_module_update_loop(HAPEngine *engine, short numModules, HAPModul
 		actualTime = (*(*engine).time).currentTime;
 		actualTimeDelta = (*(*engine).time).timeDelta;
 
+		if (actualTimeDelta < MIN_SIMULATION_FRAME_TIME) {
+			usleep((MIN_SIMULATION_FRAME_TIME - actualTimeDelta) * 1000);
+
+			hap_timer_update((*engine).time);
+
+			actualTime = (*(*engine).time).currentTime;
+			actualTimeDelta = (*(*engine).time).timeDelta;
+		}
+
 		while (simulatedTime < actualTime) {
 			if (simulatedTimeDelta > MAX_SIMULATION_FRAME_TIME)
 				simulatedTimeDelta = MAX_SIMULATION_FRAME_TIME;
@@ -80,8 +94,7 @@ HAPModule* _hap_module_update_loop(HAPEngine *engine, short numModules, HAPModul
 			(*(*engine).time).currentTime = actualTime;
 
 			simulatedTime += simulatedTimeDelta;
-
-			simulatedTimeDelta = fmod((actualTime - simulatedTime), MAX_SIMULATION_FRAME_TIME);
+			simulatedTimeDelta = actualTime - simulatedTime;
 		}
 	}
 
