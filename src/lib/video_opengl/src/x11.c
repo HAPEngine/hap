@@ -18,6 +18,7 @@
 
 struct X11Window {
 	Window                 ref;
+
 	Display                *display;
 	GLXContext             glContext;
 };

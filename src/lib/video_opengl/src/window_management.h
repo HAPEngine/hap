@@ -1,11 +1,8 @@
 #include <hap.h>
 
-#include <GL/gl.h>
-#include <GL/glu.h>
-
 
 #ifdef OS_Linux
-#include <GL/glx.h>
+#include <GL/glx.h
 #endif
 
 

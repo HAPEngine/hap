@@ -1,6 +1,6 @@
 # Output files
-bin/*
-lib/*
+/bin/*
+/lib/*
 
 
 # Build artifacts
@@ -20,6 +20,7 @@ Makefile
 Testing
 x64
 !CMakeLists.txt
+/build/*
 
 
 # Non-git hidden files
