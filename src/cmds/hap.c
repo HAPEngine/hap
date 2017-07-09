@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
 
 	if (engine == NULL) return 1;
 
-	(*engine).name = "hap";  // TODO: This should come from build tools
+	(*engine).name = "hap";
 	(*engine).argc = &argc;
 	(*engine).argvp = argv;
 
