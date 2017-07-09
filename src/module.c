@@ -1,10 +1,10 @@
-#ifdef OS_Windows
-#else
+#include <hap.h>
+
+#ifndef OS_Windows
 #include <dlfcn.h>
 #include <unistd.h>
 #endif
 
-#include <hap.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -112,6 +112,7 @@ void* hap_module_execute(HAPEngine *engine, const short numModules, char *identi
 	HAPModule **modules = (HAPModule**) calloc(numModules, sizeof(HAPModule*));
 
 	for (index = 0; index < numModules; ++index) {
+		printf("[hap] Creating module: %s\n", identifiers[index]);
 		modules[index] = hap_module_create(engine, identifiers[index]);
 
 		// Creating a module failed, so destroy previously created ones
@@ -128,9 +129,12 @@ void* hap_module_execute(HAPEngine *engine, const short numModules, char *identi
 	}
 
 	for (index = 0; index < numModules; ++index) {
+		printf("[hap] Loading module: %s\n", identifiers[index]);
 		hap_module_load(engine, modules[index]);
 	}
 
+
+	printf("[hap] All modules loaded.\n");
 
 	time = (*engine).time;
 
@@ -176,18 +180,23 @@ HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
 	(*module).destroy = (void(*)(HAPEngine* engine, void *state)) GetProcAddress((*module).ref, "destroy");
 #else
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
+#pragma GCC diagnostic ignored "-Wpedantic"  /** TODO: Why doesn't `pendantic` allow these casts?... **/
 	(*module).create = (void* (*)(HAPEngine* engine)) dlsym((*module).ref, "create");
 	(*module).load = (void (*)(HAPEngine* engine, void *state, char *identifier)) dlsym((*module).ref, "load");
 	(*module).update = (HAPTime (*)(HAPEngine* engine, void *state)) dlsym((*module).ref, "update");
 	(*module).unload = (void (*)(HAPEngine* engine, void *state)) dlsym((*module).ref, "unload");
 	(*module).destroy = (void (*)(HAPEngine* engine, void *state)) dlsym((*module).ref, "destroy");
 #pragma GCC diagnostic pop
-
-	if ((*module).create)
-		(*module).state = ((*module).create(engine));
-
 #endif
+
+	if ((*module).create == NULL) fprintf(stderr, "[hap] Warning: Module '%s' does not export 'create'.\n", (*module).identifier);
+	if ((*module).load == NULL) fprintf(stderr, "[hap] Warning: Module '%s' does not export 'load'.\n", (*module).identifier);
+	if ((*module).update == NULL) fprintf(stderr, "[hap] Warning: Module '%s' does not export 'update'\n", (*module).identifier);
+	if ((*module).unload == NULL) fprintf(stderr, "[hap] Warning: Module '%s' does not export 'unload'\n", (*module).identifier);
+	if ((*module).destroy == NULL) fprintf(stderr, "[hap] Warning: Module '%s' does not export 'destroy'\n", (*module).identifier);
+
+	if ((*module).create != NULL)
+		(*module).state = (*module).create(engine);
 
 	return module;
 }
