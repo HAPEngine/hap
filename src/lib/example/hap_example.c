@@ -7,6 +7,14 @@
  *
  */
 
+ /** Modifies the linker so that it uses proper symbol names in MSVC. **/
+#ifdef OS_Windows
+#pragma comment(linker, "/EXPORT:create=create")
+#pragma comment(linker, "/EXPORT:load=load")
+#pragma comment(linker, "/EXPORT:update=update")
+#pragma comment(linker, "/EXPORT:unload=unload")
+#pragma comment(linker, "/EXPORT:destroy=destroy")
+#endif
 
 #ifndef OS_Windows
 #pragma GCC diagnostic push
