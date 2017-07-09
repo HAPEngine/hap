@@ -28,8 +28,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
 	switch (uMsg) {
 	case WM_PAINT:
-		window_render(NULL);
 		BeginPaint(hWnd, &ps);
+		window_render(NULL);
 		EndPaint(hWnd, &ps);
 		return 0;
 
