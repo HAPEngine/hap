@@ -2,8 +2,9 @@
  * OpenGL module driver for HAP.
  */
 
-#ifdef OS_Windows
+#include <hap.h>
 
+#ifdef OS_Windows
 #elif OS_Linux
 #include "x11.h"
 #endif
@@ -11,14 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <GL/gl.h>
-#include <GL/glx.h>
-#include <GL/glu.h>
-#include <math.h>
-
-#include <hap.h>
-
-#include "x11.h"
+#include "window_management.h"
 
 
 void* create(HAPEngine *engine) {

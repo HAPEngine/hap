@@ -3,9 +3,18 @@
 #include <string.h>
 #include <hap.h>
 
+#ifdef OS_Windows
+#define MAX_LOADABLE_MODULES 256
+#endif
+
 int main(int argc, char **argv) {
 	int index;
-	char *identifiers[argc-1];
+
+#ifdef OS_Windows
+	char *identifiers[MAX_LOADABLE_MODULES];
+#else
+	char *identifiers[argc - 1];
+#endif
 
 	HAPEngine *engine = hap_engine_create();
 
@@ -21,7 +30,7 @@ int main(int argc, char **argv) {
 	}
 
 	for (index = 1; index < argc; ++index) {
-		identifiers[index-1] = strdup(argv[index]);
+		identifiers[index-1] = _strdup(argv[index]);
 	}
 
 	hap_module_execute(engine, argc - 1, identifiers);

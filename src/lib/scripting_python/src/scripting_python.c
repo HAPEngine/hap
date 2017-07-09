@@ -5,6 +5,7 @@
 void* create(HAPEngine *engine) {
 	Py_SetProgramName(((wchar_t**) (*engine).argvp)[0]);
 	Py_Initialize();
+	return NULL;
 }
 
 

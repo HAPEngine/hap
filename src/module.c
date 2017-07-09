@@ -1,12 +1,13 @@
-#ifndef OS_Windows
+#ifdef OS_Windows
+#else
 #include <dlfcn.h>
+#include <unistd.h>
 #endif
 
 #include <hap.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 #include "module.h"
 #include "timer.h"
@@ -66,7 +67,10 @@ HAPModule* _hap_module_update_loop(HAPEngine *engine, short numModules, HAPModul
 		actualTimeDelta = (*(*engine).time).timeDelta;
 
 		if (actualTimeDelta < MIN_SIMULATION_FRAME_TIME) {
+#ifdef OS_Windows
+#else
 			usleep((MIN_SIMULATION_FRAME_TIME - actualTimeDelta) * 1000);
+#endif
 
 			hap_timer_update((*engine).time);
 
@@ -102,7 +106,6 @@ HAPModule* _hap_module_update_loop(HAPEngine *engine, short numModules, HAPModul
 }
 
 void* hap_module_execute(HAPEngine *engine, const short numModules, char *identifiers[]) {
-	HAPTime nextUpdate;
 	short index;
 	timeState *time;
 
@@ -156,7 +159,9 @@ HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
 
 	if ((*module).ref == NULL) {
 		fprintf(stderr, "Failed to load module: %s\n", (*module).identifier);
-		fprintf(stderr, "Error was: %s\n\n", dlerror());
+#ifndef OS_Windows
+		fprintf(stderr, "Error was: %i\n\n", dlerror());
+#endif
 
 		hap_module_destroy(engine, module);
 		exit(EXIT_FAILURE);

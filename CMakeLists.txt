@@ -11,6 +11,8 @@ ADD_DEFINITIONS(
 # Modify compiler options to be more strict
 IF(CMAKE_COMPILER_IS_GNUCC)
   SET(CMAKE_CC_FLAGS "-std=c99 -Wall -Wextra -pedantic -Wl,--no-as-needed -g --coverage")
+ELSE(CMAKE_COMPILER_IS_GNUCC)
+SET(CMAKE_C_FLAGS "--std=c99")
 ENDIF(CMAKE_COMPILER_IS_GNUCC)
 
 

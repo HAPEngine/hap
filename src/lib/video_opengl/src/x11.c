@@ -13,7 +13,7 @@
 
 #include <hap.h>
 
-#include "x11.h"
+#include "window_management.h"
 
 
 struct GLWindow {
