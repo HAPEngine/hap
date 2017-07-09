@@ -16,14 +16,14 @@
 #include "window_management.h"
 
 
-struct GLWindow {
-	Display                *display;
+struct X11Window {
 	Window                 ref;
+	Display                *display;
 	GLXContext             glContext;
 };
 
 
-typedef struct GLWindow GLWindow;
+typedef struct X11Window X11Window;
 
 
 Atom                   WM_DELETE_WINDOW;
@@ -36,7 +36,7 @@ GLint glAttributes[] = {
 
 
 void* window_create(const int width, const int height) {
-	GLWindow* window = (GLWindow*) calloc(1, sizeof(GLWindow*));
+	X11Window* window = (X11Window*) calloc(1, sizeof(X11Window*));
 	Window root;
 	XSetWindowAttributes setAttributes;
 	XVisualInfo *visualInfo;
@@ -108,7 +108,7 @@ int window_update(void* state) {
 	XEvent event;
 	XWindowAttributes attributes;
 
-	GLWindow *window = (GLWindow*) state;
+	X11Window *window = (X11Window*) state;
 
 	if (window == NULL) return -1;
 
@@ -134,12 +134,12 @@ int window_update(void* state) {
 
 
 void window_render(void *state) {
-	GLWindow *window = (GLWindow*) state;
+	X11Window *window = (X11Window*) state;
 	glXSwapBuffers((*window).display, (*window).ref);
 }
 
 void window_close(void* state) {
-	GLWindow *window = (GLWindow*) state;
+	X11Window *window = (X11Window*) state;
 
 	glXMakeCurrent((*window).display, None, NULL);
 	glXDestroyContext((*window).display, (*window).glContext);
