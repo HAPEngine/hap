@@ -7,6 +7,10 @@
 #define MAX_LOADABLE_MODULES 256
 #endif
 
+#ifndef _strdup
+#define _strdup strdup
+#endif
+
 int main(int argc, char **argv) {
 	int index;
 
