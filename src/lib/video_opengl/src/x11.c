@@ -36,7 +36,7 @@ GLint glAttributes[] = {
 };
 
 
-void* window_create(const int width, const int height) {
+void* window_create(HAPEngine *engine, const int width, const int height) {
 	X11Window* window = (X11Window*) calloc(1, sizeof(X11Window*));
 	Window root;
 	XSetWindowAttributes setAttributes;

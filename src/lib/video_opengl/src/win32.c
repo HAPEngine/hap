@@ -55,9 +55,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 }
 
 
-void* window_create(const int width, const int height) {
+void* window_create(HAPEngine *engine, const int width, const int height) {
 	const char* windowClassName = "OpenGL";
-	const char* title = "hap";
 
 	int         pf;
 	WNDCLASS    wc;
@@ -81,7 +80,7 @@ void* window_create(const int width, const int height) {
 	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wc.hbrBackground = NULL;
 	wc.lpszMenuName = NULL;
-	wc.lpszClassName = "OpenGL";
+	wc.lpszClassName = windowClassName;
 
 	if (!RegisterClass(&wc)) {
 		fprintf(stderr, "RegisterClass() failed: Cannot register window class.");
@@ -90,7 +89,7 @@ void* window_create(const int width, const int height) {
 
 	(*window).ref = CreateWindow(
 		windowClassName,
-		title,
+		(*engine).name,
 		WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
 		10, 10,
 		width, height,
@@ -145,7 +144,7 @@ int window_update(void* state) {
 
 	wglMakeCurrent((*window).deviceContext, (*window).renderingContext);
 
-	while (GetMessage(&msg, (*window).ref, 0, 0)) {
+	while (PeekMessage(&msg, (*window).ref, 0, 0, PM_REMOVE)) {
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
