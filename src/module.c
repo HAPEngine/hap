@@ -162,9 +162,9 @@ HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
 #endif
 
 	if ((*module).ref == NULL) {
-		fprintf(stderr, "Failed to load module: %s\n", (*module).identifier);
+		fprintf(stderr, "[hap] Failed to load module: %s\n", (*module).identifier);
 #ifndef OS_Windows
-		fprintf(stderr, "Error was: %i\n\n", dlerror());
+		fprintf(stderr, "[hap] Error was: %s\n\n", dlerror());
 #endif
 
 		hap_module_destroy(engine, module);
