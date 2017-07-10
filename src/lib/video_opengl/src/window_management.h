@@ -2,7 +2,7 @@
 
 
 #ifdef OS_Linux
-#include <GL/glx.h
+#include <GL/glx.h>
 #endif
 
 
