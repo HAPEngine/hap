@@ -18,10 +18,15 @@ ADD_LIBRARY(hap_video_opengl SHARED ${VIDEO_OPENGL_SOURCES})
 # On OSX, we want to include SDL for Window creation
 IF(${CMAKE_HOST_SYSTEM_NAME} MATCHES "Darwin")
   # Avoid SDL wrapping main()
+
+  SET(SDL_LIBRARY "sdl2")
   SET(SDL_BUILDING_LIBRARY "Setting this avoids wrapping main loop")
   FIND_PACKAGE(SDL REQUIRED)
   TARGET_LINK_LIBRARIES(hap_video_opengl ${SDL_LIBRARY})
   TARGET_INCLUDE_DIRECTORIES(hap_video_opengl PUBLIC ${SDL_INCLUDE_DIRS})
+  IF(NOT SDL_FOUND)
+    MESSAGE(FATAL_ERROR " SDL not found!")
+  ENDIF(NOT SDL_FOUND)
 ENDIF(${CMAKE_HOST_SYSTEM_NAME} MATCHES "Darwin")
 
 
