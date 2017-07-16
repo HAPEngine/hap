@@ -20,7 +20,7 @@
 void* create(HAPEngine *engine) {
 	(void)engine; // Mark variable as used to avoid compiler warnings
 
-	void *window = window_create((*engine).name, 640, 480);
+	void *window = window_create(engine, 640, 480);
 
 	if (window == NULL) {
 		fprintf(stderr, "Could not create a window.\n");

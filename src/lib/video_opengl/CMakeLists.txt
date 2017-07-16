@@ -11,10 +11,18 @@ IF(NOT OPENGL_FOUND)
 ENDIF(NOT OPENGL_FOUND)
 
 
-FILE(GLOB VIDEO_OPENGL_SOURCES src/*.c)
+FILE(GLOB VIDEO_OPENGL_SOURCES src/*.c src/*.m)
 ADD_LIBRARY(hap_video_opengl SHARED ${VIDEO_OPENGL_SOURCES})
 
 
-TARGET_LINK_LIBRARIES(hap_video_opengl
-  ${OPENGL_LIBRARIES}
-)
+# On OSX, we want to include SDL for Window creation
+IF(${CMAKE_HOST_SYSTEM_NAME} MATCHES "Darwin")
+  # Avoid SDL wrapping main()
+  SET(SDL_BUILDING_LIBRARY "Setting this avoids wrapping main loop")
+  FIND_PACKAGE(SDL REQUIRED)
+  TARGET_LINK_LIBRARIES(hap_video_opengl ${SDL_LIBRARY})
+  TARGET_INCLUDE_DIRECTORIES(hap_video_opengl PUBLIC ${SDL_INCLUDE_DIRS})
+ENDIF(${CMAKE_HOST_SYSTEM_NAME} MATCHES "Darwin")
+
+
+TARGET_LINK_LIBRARIES(hap_video_opengl ${OPENGL_LIBRARIES})
