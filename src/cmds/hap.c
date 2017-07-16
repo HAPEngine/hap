@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
 	char *identifiers[argc - 1];
 #endif
 
-	HAPEngine *engine = hap_engine_create();
+	HAPEngine *engine = hap_engine_create(NULL);
 
 	if (engine == NULL) return 1;
 
