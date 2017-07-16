@@ -10,10 +10,8 @@ Hap uses [cmake][cmk]!
 
 To build all modules, you will need the following libraries:
 
-- GLEW
 - OpenAL
 - OpenGL
-- freeglut
 
 After cloning this repo, run `cmake .` in the project root. If everything went
 well, then a Makefile should have been generated. If not, then you may need to
