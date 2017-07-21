@@ -7,3 +7,6 @@
 [submodule "src/modules/scripting_python"]
 	path = src/modules/scripting_python
 	url = https://github.com/HAPEngine/scripting_python
+[submodule "src/modules/audio_openal"]
+	path = src/modules/audio_openal
+	url = https://github.com/HAPEngine/scripting_python
