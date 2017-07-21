@@ -5,39 +5,40 @@
 #include <Windows.h>
 #endif
 
+#include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 typedef long double HAPTime;
 
 enum HAPLogLevel {
-	LOGLEVEL_INFO = 0,
-	LOGLEVEL_NOTICE = 10,
-	LOGLEVEL_WARNING = 20,
-	LOGLEVEL_ERROR = 30,
-	LOGLEVEL_FATAL = 99,
+    LOGLEVEL_INFO = 0,
+    LOGLEVEL_NOTICE = 10,
+    LOGLEVEL_WARNING = 20,
+    LOGLEVEL_ERROR = 30,
 };
 
 typedef enum HAPLogLevel HAPLogLevel;
 
 
 struct timeState {
-	HAPTime currentTime;
-	HAPTime timeDelta;
+    HAPTime currentTime;
+    HAPTime timeDelta;
 
-	void *timespec;
+    void *timespec;
 };
 
 typedef struct timeState timeState;
 
 
 struct HAPEngine {
-	HAPLogLevel loglevel;
-	char *name;
+    HAPLogLevel logLevel;
+    char *name;
 
-	timeState *time;
+    timeState *time;
 
-	int  *argc;
-	char **argvp;
+    int  *argc;
+    char **argvp;
 };
 
 typedef struct HAPEngine HAPEngine;
@@ -46,5 +47,14 @@ typedef struct HAPEngine HAPEngine;
 HAPEngine* hap_engine_create(char *name);
 void* hap_module_execute(HAPEngine *engine, const short numModules, char *identifiers[]);
 void hap_engine_destroy(HAPEngine* engine);
-void hap_log(HAPEngine *engine, HAPLogLevel level, char *message);
+
+
+void hap_log(HAPEngine *engine, FILE* dest, char *message, ...);
+bool hap_log_info(HAPEngine *engine, char *message, ...);
+bool hap_log_notice(HAPEngine *engine, char *message, ...);
+bool hap_log_warning(HAPEngine *engine, char *message, ...);
+bool hap_log_error(HAPEngine *engine, char *message, ...);
+void hap_log_fatal_error(HAPEngine *engine, int code, char *message, ...);
+
+
 #endif

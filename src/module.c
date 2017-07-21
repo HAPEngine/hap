@@ -43,199 +43,199 @@
 typedef struct moduleList moduleList;
 
 struct moduleList {
-	HAPModule    *module;
+    HAPModule    *module;
 
-	moduleList *next;
+    moduleList *next;
 };
 
 HAPModule* _hap_module_update_loop(HAPEngine *engine, short numModules, HAPModule **modules) {
-	short index;
+    short index;
 
-	HAPTime simulatedTime;
-	HAPTime simulatedTimeDelta;
+    HAPTime simulatedTime;
+    HAPTime simulatedTimeDelta;
 
-	HAPTime actualTime;
-	HAPTime actualTimeDelta;
+    HAPTime actualTime;
+    HAPTime actualTimeDelta;
 
-	for (;;) {
-		simulatedTime = (*(*engine).time).currentTime;
-		simulatedTimeDelta = (*(*engine).time).timeDelta;
+    for (;;) {
+        simulatedTime = (*(*engine).time).currentTime;
+        simulatedTimeDelta = (*(*engine).time).timeDelta;
 
-		hap_timer_update((*engine).time);
+        hap_timer_update((*engine).time);
 
-		actualTime = (*(*engine).time).currentTime;
-		actualTimeDelta = (*(*engine).time).timeDelta;
+        actualTime = (*(*engine).time).currentTime;
+        actualTimeDelta = (*(*engine).time).timeDelta;
 
-		if (actualTimeDelta < MIN_SIMULATION_FRAME_TIME) {
+        if (actualTimeDelta < MIN_SIMULATION_FRAME_TIME) {
 #ifdef OS_Windows
 #else
-			usleep((MIN_SIMULATION_FRAME_TIME - actualTimeDelta) * 1000);
+            usleep((MIN_SIMULATION_FRAME_TIME - actualTimeDelta) * 1000);
 #endif
 
-			hap_timer_update((*engine).time);
+            hap_timer_update((*engine).time);
 
-			actualTime = (*(*engine).time).currentTime;
-			actualTimeDelta = (*(*engine).time).timeDelta;
-		}
+            actualTime = (*(*engine).time).currentTime;
+            actualTimeDelta = (*(*engine).time).timeDelta;
+        }
 
-		while (simulatedTime < actualTime) {
-			if (simulatedTimeDelta > MAX_SIMULATION_FRAME_TIME)
-				simulatedTimeDelta = MAX_SIMULATION_FRAME_TIME;
+        while (simulatedTime < actualTime) {
+            if (simulatedTimeDelta > MAX_SIMULATION_FRAME_TIME)
+                simulatedTimeDelta = MAX_SIMULATION_FRAME_TIME;
 
-			(*(*engine).time).currentTime = simulatedTime;
-			(*(*engine).time).timeDelta = simulatedTimeDelta;
+            (*(*engine).time).currentTime = simulatedTime;
+            (*(*engine).time).timeDelta = simulatedTimeDelta;
 
-			for (index = 0; index < numModules; ++index) {
-				if ((*modules[index]).nextUpdate > simulatedTime) continue;
+            for (index = 0; index < numModules; ++index) {
+                if ((*modules[index]).nextUpdate > simulatedTime) continue;
 
-				(*modules[index]).nextUpdate = hap_module_update(engine, modules[index]);
+                (*modules[index]).nextUpdate = hap_module_update(engine, modules[index]);
 
-				if ((*modules[index]).nextUpdate < 0) return modules[index];
+                if ((*modules[index]).nextUpdate < 0) return modules[index];
 
-				(*modules[index]).nextUpdate += simulatedTime;
-			}
+                (*modules[index]).nextUpdate += simulatedTime;
+            }
 
-			(*(*engine).time).currentTime = actualTime;
+            (*(*engine).time).currentTime = actualTime;
 
-			simulatedTime += simulatedTimeDelta;
-			simulatedTimeDelta = actualTime - simulatedTime;
-		}
-	}
+            simulatedTime += simulatedTimeDelta;
+            simulatedTimeDelta = actualTime - simulatedTime;
+        }
+    }
 
-	return NULL;
+    return NULL;
 }
 
 void* hap_module_execute(HAPEngine *engine, const short numModules, char *identifiers[]) {
-	short index;
-	timeState *time;
+    short index;
+    timeState *time;
 
-	HAPModule **modules = (HAPModule**) calloc(numModules, sizeof(HAPModule*));
+    HAPModule **modules = (HAPModule**) calloc(numModules, sizeof(HAPModule*));
 
-	for (index = 0; index < numModules; ++index) {
-		printf("[hap] Creating module: %s\n", identifiers[index]);
-		modules[index] = hap_module_create(engine, identifiers[index]);
+    for (index = 0; index < numModules; ++index) {
+        printf("[hap] Creating module: %s\n", identifiers[index]);
+        modules[index] = hap_module_create(engine, identifiers[index]);
 
-		// Creating a module failed, so destroy previously created ones
-		if (modules[index] == NULL) {
-			--index;
+        // Creating a module failed, so destroy previously created ones
+        if (modules[index] == NULL) {
+            --index;
 
-			for (; index >= 0; --index) {
-				hap_module_destroy(engine, modules[index]);
-				modules[index] = NULL;
-			}
+            for (; index >= 0; --index) {
+                hap_module_destroy(engine, modules[index]);
+                modules[index] = NULL;
+            }
 
-			return NULL;
-		}
-	}
+            return NULL;
+        }
+    }
 
-	for (index = 0; index < numModules; ++index) {
-		printf("[hap] Loading module: %s\n", identifiers[index]);
-		hap_module_load(engine, modules[index]);
-	}
+    for (index = 0; index < numModules; ++index) {
+        printf("[hap] Loading module: %s\n", identifiers[index]);
+        hap_module_load(engine, modules[index]);
+    }
 
 
-	printf("[hap] All modules loaded.\n");
+    printf("[hap] All modules loaded.\n");
 
-	time = (*engine).time;
+    time = (*engine).time;
 
-	_hap_module_update_loop(engine, numModules, modules);
+    _hap_module_update_loop(engine, numModules, modules);
 
-	for (index = 0; index < numModules; ++index) hap_module_unload(engine, modules[index]);
+    for (index = 0; index < numModules; ++index) hap_module_unload(engine, modules[index]);
 
-	for (index = 0; index < numModules; ++index) hap_module_destroy(engine, modules[index]);
+    for (index = 0; index < numModules; ++index) hap_module_destroy(engine, modules[index]);
 
-	return (void*) modules;
+    return (void*) modules;
 }
 
 HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
-	HAPModule *module = (HAPModule*) calloc(1, sizeof(HAPModule));
+    HAPModule *module = (HAPModule*) calloc(1, sizeof(HAPModule));
 
-	if (module == NULL) return NULL;
+    if (module == NULL) return NULL;
 
-	(*module).identifier = identifier;
-	(*module).nextUpdate = 0;
+    (*module).identifier = identifier;
+    (*module).nextUpdate = 0;
 
 #ifdef OS_Windows
-	(*module).ref = (void*) LoadLibrary((*module).identifier);
+    (*module).ref = (void*) LoadLibrary((*module).identifier);
 #else
-	(*module).ref = dlopen((*module).identifier, RTLD_NOW);
+    (*module).ref = dlopen((*module).identifier, RTLD_NOW);
 #endif
 
-	if ((*module).ref == NULL) {
-		fprintf(stderr, "[hap] Failed to load module: %s\n", (*module).identifier);
+    if ((*module).ref == NULL) {
+        hap_log_error(engine, "[hap] Failed to load module: %s\n", (*module).identifier);
 #ifndef OS_Windows
-		fprintf(stderr, "[hap] Error was: %s\n\n", dlerror());
+        hap_log_error(engine, "[hap] Error was: %s\n\n", dlerror());
 #endif
 
-		hap_module_destroy(engine, module);
-		exit(EXIT_FAILURE);
-		return NULL;
-	}
+        hap_module_destroy(engine, module);
+        exit(EXIT_FAILURE);
+        return NULL;
+    }
 
 #ifdef OS_Windows
-	(*module).create = (void* (*)(HAPEngine* engine)) GetProcAddress((*module).ref, "create");
-	(*module).load = (void(*)(HAPEngine* engine, void *state, char *identifier)) GetProcAddress((*module).ref, "load");
-	(*module).update = (HAPTime(*)(HAPEngine* engine, void *state)) GetProcAddress((*module).ref, "update");
-	(*module).unload = (void(*)(HAPEngine* engine, void *state)) GetProcAddress((*module).ref, "unload");
-	(*module).destroy = (void(*)(HAPEngine* engine, void *state)) GetProcAddress((*module).ref, "destroy");
+    (*module).create = (void* (*)(HAPEngine* engine)) GetProcAddress((*module).ref, "create");
+    (*module).load = (void(*)(HAPEngine* engine, void *state, char *identifier)) GetProcAddress((*module).ref, "load");
+    (*module).update = (HAPTime(*)(HAPEngine* engine, void *state)) GetProcAddress((*module).ref, "update");
+    (*module).unload = (void(*)(HAPEngine* engine, void *state)) GetProcAddress((*module).ref, "unload");
+    (*module).destroy = (void(*)(HAPEngine* engine, void *state)) GetProcAddress((*module).ref, "destroy");
 #else
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"  /** TODO: Why doesn't `pendantic` allow these casts?... **/
-	(*module).create = (void* (*)(HAPEngine* engine)) dlsym((*module).ref, "create");
-	(*module).load = (void (*)(HAPEngine* engine, void *state, char *identifier)) dlsym((*module).ref, "load");
-	(*module).update = (HAPTime (*)(HAPEngine* engine, void *state)) dlsym((*module).ref, "update");
-	(*module).unload = (void (*)(HAPEngine* engine, void *state)) dlsym((*module).ref, "unload");
-	(*module).destroy = (void (*)(HAPEngine* engine, void *state)) dlsym((*module).ref, "destroy");
+    (*module).create = (void* (*)(HAPEngine* engine)) dlsym((*module).ref, "create");
+    (*module).load = (void (*)(HAPEngine* engine, void *state, char *identifier)) dlsym((*module).ref, "load");
+    (*module).update = (HAPTime (*)(HAPEngine* engine, void *state)) dlsym((*module).ref, "update");
+    (*module).unload = (void (*)(HAPEngine* engine, void *state)) dlsym((*module).ref, "unload");
+    (*module).destroy = (void (*)(HAPEngine* engine, void *state)) dlsym((*module).ref, "destroy");
 #pragma GCC diagnostic pop
 #endif
 
-	if ((*module).create == NULL) fprintf(stderr, "[hap] Warning: Module '%s' does not export 'create'.\n", (*module).identifier);
-	if ((*module).load == NULL) fprintf(stderr, "[hap] Warning: Module '%s' does not export 'load'.\n", (*module).identifier);
-	if ((*module).update == NULL) fprintf(stderr, "[hap] Warning: Module '%s' does not export 'update'\n", (*module).identifier);
-	if ((*module).unload == NULL) fprintf(stderr, "[hap] Warning: Module '%s' does not export 'unload'\n", (*module).identifier);
-	if ((*module).destroy == NULL) fprintf(stderr, "[hap] Warning: Module '%s' does not export 'destroy'\n", (*module).identifier);
+    if ((*module).create == NULL) hap_log_error(engine, "[hap] Warning: Module '%s' does not export 'create'.\n", (*module).identifier);
+    if ((*module).load == NULL) hap_log_error(engine, "[hap] Warning: Module '%s' does not export 'load'.\n", (*module).identifier);
+    if ((*module).update == NULL) hap_log_error(engine, "[hap] Warning: Module '%s' does not export 'update'\n", (*module).identifier);
+    if ((*module).unload == NULL) hap_log_error(engine, "[hap] Warning: Module '%s' does not export 'unload'\n", (*module).identifier);
+    if ((*module).destroy == NULL) hap_log_error(engine, "[hap] Warning: Module '%s' does not export 'destroy'\n", (*module).identifier);
 
-	if ((*module).create != NULL)
-		(*module).state = (*module).create(engine);
+    if ((*module).create != NULL)
+        (*module).state = (*module).create(engine);
 
-	return module;
+    return module;
 }
 
 void hap_module_load(HAPEngine *engine, HAPModule *module) {
-	if ((*module).load == NULL) return;
+    if ((*module).load == NULL) return;
 
-	(*module).load(engine, (*module).state, (*module).identifier);
+    (*module).load(engine, (*module).state, (*module).identifier);
 }
 
 HAPTime hap_module_update(HAPEngine *engine, HAPModule *module) {
-	if ((*module).update == NULL) return 0;
+    if ((*module).update == NULL) return 0;
 
-	return (*module).update(engine, (*module).state);
+    return (*module).update(engine, (*module).state);
 }
 
 void hap_module_unload(HAPEngine *engine, HAPModule *module) {
-	if ((*module).unload == NULL) return;
+    if ((*module).unload == NULL) return;
 
-	(*module).unload(engine, (*module).state);
+    (*module).unload(engine, (*module).state);
 }
 
 void _module_close_ref(void* ref) {
-	if (ref == NULL) return;
+    if (ref == NULL) return;
 
 #ifndef OS_Windows
-	dlclose(ref);
+    dlclose(ref);
 #endif
 }
 
 
 void hap_module_destroy(HAPEngine *engine, HAPModule *module) {
-	if ((*module).destroy != NULL)
-		(*module).destroy(engine, (*module).state);
+    if ((*module).destroy != NULL)
+        (*module).destroy(engine, (*module).state);
 
-	_module_close_ref((*module).ref);
+    _module_close_ref((*module).ref);
 
-	(*module).state   = NULL;
-	(*module).ref = NULL;
+    (*module).state   = NULL;
+    (*module).ref = NULL;
 
-	free(module);
+    free(module);
 }
