@@ -4,3 +4,6 @@
 [submodule "src/modules/audio_openal"]
 	path = src/modules/audio_openal
 	url = https://github.com/HAPEngine/audio_openal
+[submodule "src/modules/example"]
+	path = src/modules/example
+	url = https://github.com/HAPEngine/example
