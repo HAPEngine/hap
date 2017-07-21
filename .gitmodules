@@ -1,0 +1,3 @@
+[submodule "src/modules/video_opengl"]
+	path = src/modules/video_opengl
+	url = https://github.com/HAPEngine/video_opengl
