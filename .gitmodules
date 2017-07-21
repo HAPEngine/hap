@@ -4,3 +4,6 @@
 [submodule "src/modules/example"]
 	path = src/modules/example
 	url = https://github.com/HAPEngine/example
+[submodule "src/modules/scripting_python"]
+	path = src/modules/scripting_python
+	url = https://github.com/HAPEngine/scripting_python
