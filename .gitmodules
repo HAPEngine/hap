@@ -10,3 +10,6 @@
 [submodule "src/modules/audio_openal"]
 	path = src/modules/audio_openal
 	url = https://github.com/HAPEngine/scripting_python
+[submodule "src/modules/video_vulkan"]
+	path = src/modules/video_vulkan
+	url = https://github.com/HAPEngine/video_vulkan
