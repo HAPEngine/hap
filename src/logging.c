@@ -1,22 +1,36 @@
 #include <hap.h>
+#include <stdarg.h>
 #include <stdio.h>
 
 #include "logging.h"
 
 
 bool hap_log_necessary(HAPEngine *engine, HAPLogLevel level) {
-    return (*engine).logLevel < level;
+    return (*engine).logLevel <= level;
 }
 
 
 void hap_log(HAPEngine *engine, FILE *dest, char *message, ...) {
-    char *strBuffer = calloc(sprintf(NULL, "%s", message), sizeof(char));
+    va_list arguments, argumentsCopy;
 
-    // TODO: Handle error?...
-    if (strBuffer == NULL) return;
+    // The first call to vsprintf gets the length of the resulting string
+    va_start(arguments, message);
+    va_copy(argumentsCopy, arguments);
+    size_t length = vsnprintf(NULL, 0, message, argumentsCopy);
+    va_end(argumentsCopy);
 
-    sprintf(strBuffer, "%s", message);
+    char *strBuffer = calloc(length, sizeof(char));
+
+    if (strBuffer == NULL) exit(500);
+
+    // Second call to vsprintf for formatting the given message string
+    vsnprintf(strBuffer, length, message, arguments);
+    va_end(arguments);
+
+    // Finally, output the result with the prefix to dest
     fprintf(dest, "[%s] %s", (*engine).name, message);
+
+    free(strBuffer);
 }
 
 

@@ -16,10 +16,10 @@ typedef enum HAPLogLevel HAPLogLevel;
 
 
 enum HAPLogLevel {
-    LOGLEVEL_INFO = 0,
-    LOGLEVEL_NOTICE = 10,
-    LOGLEVEL_WARNING = 20,
-    LOGLEVEL_ERROR = 30,
+    LOGLEVEL_INFO = 30,
+    LOGLEVEL_NOTICE = 20,
+    LOGLEVEL_WARNING = 10,
+    LOGLEVEL_ERROR = 5,
 };
 
 

@@ -15,6 +15,7 @@ HAPEngine* hap_engine_create(char *name) {
 
     (*engine).name = name;
     (*engine).time = hap_timer_update((*engine).time);
+    (*engine).logLevel = LOGLEVEL_INFO;
 
     (*engine).log = hap_log;
     (*engine).log_info = hap_log_info;
@@ -22,6 +23,8 @@ HAPEngine* hap_engine_create(char *name) {
     (*engine).log_warning = hap_log_warning;
     (*engine).log_error = hap_log_error;
     (*engine).log_fatal_error = hap_log_fatal_error;
+
+    (*engine).log_info(engine, "Initialized new engine.\n");
 
     return engine;
 }
