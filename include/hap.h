@@ -12,16 +12,17 @@
 typedef long double HAPTime;
 typedef struct timeState timeState;
 typedef struct HAPEngine HAPEngine;
-typedef enum HAPLogLevel HAPLogLevel;
 
 
 enum HAPLogLevel {
-    LOGLEVEL_INFO = 30,
-    LOGLEVEL_NOTICE = 20,
+    LOGLEVEL_ERROR   = 5,
     LOGLEVEL_WARNING = 10,
-    LOGLEVEL_ERROR = 5,
+    LOGLEVEL_NOTICE  = 20,
+    LOGLEVEL_INFO    = 30,
 };
 
+
+typedef enum HAPLogLevel HAPLogLevel;
 
 struct timeState {
     HAPTime currentTime;
