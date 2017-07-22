@@ -18,13 +18,13 @@ HAPEngine* hap_engine_create(char *name) {
     (*engine).logLevel = LOGLEVEL_INFO;
 
     (*engine).log = hap_log;
-    (*engine).log_info = hap_log_info;
+    (*engine).log_notice = hap_log_notice;
     (*engine).log_notice = hap_log_notice;
     (*engine).log_warning = hap_log_warning;
     (*engine).log_error = hap_log_error;
     (*engine).log_fatal_error = hap_log_fatal_error;
 
-    (*engine).log_info(engine, "Initialized new engine.\n");
+    (*engine).log_notice(engine, "Initialized engine.\n");
 
     return engine;
 }
@@ -32,5 +32,6 @@ HAPEngine* hap_engine_create(char *name) {
 
 void hap_engine_destroy(HAPEngine *engine) {
     hap_timer_destroy((*engine).time);
+    (*engine).log_notice(engine, "Destroyed engine.\n");
     free(engine);
 }
