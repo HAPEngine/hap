@@ -1,11 +1,10 @@
-/** TODO: Less-hacky logging! **/
-
-
 #include <hap.h>
 #include <stdio.h>
 
+#include "logging.h"
 
-inline bool hap_log_necessary(HAPEngine *engine, HAPLogLevel level) {
+
+bool hap_log_necessary(HAPEngine *engine, HAPLogLevel level) {
     return (*engine).logLevel < level;
 }
 

@@ -162,9 +162,9 @@ HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
 #endif
 
     if ((*module).ref == NULL) {
-        hap_log_error(engine, "[hap] Failed to load module: %s\n", (*module).identifier);
+        (*engine).log_error(engine, "[hap] Failed to load module: %s\n", (*module).identifier);
 #ifndef OS_Windows
-        hap_log_error(engine, "[hap] Error was: %s\n\n", dlerror());
+        (*engine).log_error(engine, "[hap] Error was: %s\n\n", dlerror());
 #endif
 
         hap_module_destroy(engine, module);
@@ -189,11 +189,11 @@ HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
 #pragma GCC diagnostic pop
 #endif
 
-    if ((*module).create == NULL) hap_log_error(engine, "[hap] Warning: Module '%s' does not export 'create'.\n", (*module).identifier);
-    if ((*module).load == NULL) hap_log_error(engine, "[hap] Warning: Module '%s' does not export 'load'.\n", (*module).identifier);
-    if ((*module).update == NULL) hap_log_error(engine, "[hap] Warning: Module '%s' does not export 'update'\n", (*module).identifier);
-    if ((*module).unload == NULL) hap_log_error(engine, "[hap] Warning: Module '%s' does not export 'unload'\n", (*module).identifier);
-    if ((*module).destroy == NULL) hap_log_error(engine, "[hap] Warning: Module '%s' does not export 'destroy'\n", (*module).identifier);
+    if ((*module).create == NULL) (*engine).log_error(engine, "[hap] Warning: Module '%s' does not export 'create'.\n", (*module).identifier);
+    if ((*module).load == NULL) (*engine).log_error(engine, "[hap] Warning: Module '%s' does not export 'load'.\n", (*module).identifier);
+    if ((*module).update == NULL) (*engine).log_error(engine, "[hap] Warning: Module '%s' does not export 'update'\n", (*module).identifier);
+    if ((*module).unload == NULL) (*engine).log_error(engine, "[hap] Warning: Module '%s' does not export 'unload'\n", (*module).identifier);
+    if ((*module).destroy == NULL) (*engine).log_error(engine, "[hap] Warning: Module '%s' does not export 'destroy'\n", (*module).identifier);
 
     if ((*module).create != NULL)
         (*module).state = (*module).create(engine);

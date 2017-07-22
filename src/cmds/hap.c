@@ -12,35 +12,36 @@
 #endif
 
 int main(int argc, char **argv) {
-	int index;
+    int index;
 
 #ifdef OS_Windows
-	char *identifiers[MAX_LOADABLE_MODULES];
+    char *identifiers[MAX_LOADABLE_MODULES];
 #else
-	char *identifiers[argc - 1];
+    char *identifiers[argc - 1];
 #endif
 
-	HAPEngine *engine = hap_engine_create(NULL);
+    HAPEngine *engine = hap_engine_create(NULL);
 
-	if (engine == NULL) return 1;
+    if (engine == NULL) return 1;
 
-	(*engine).name = "hap";
-	(*engine).argc = &argc;
-	(*engine).argvp = argv;
+    (*engine).name = "hap";
+    (*engine).argc = &argc;
+    (*engine).argvp = argv;
 
-	if (argc <= 1) {
-		printf("No modules to load. Nothing to do.\n");
-		return 0;
-	}
+    if (argc <= 1) {
+        (*engine).log_info(engine, "No modules to load. Nothing to do.\n");
+        return 0;
+    }
 
-	for (index = 1; index < argc; ++index) {
-		identifiers[index-1] = _strdup(argv[index]);
-	}
+    for (index = 1; index < argc; ++index) {
+        (*engine).log_info(engine, "Loading module: %s\n", argv[index]);
+        identifiers[index-1] = _strdup(argv[index]);
+    }
 
-	hap_module_execute(engine, argc - 1, identifiers);
-	hap_engine_destroy(engine);
+    hap_module_execute(engine, argc - 1, identifiers);
+    hap_engine_destroy(engine);
 
-	for (index = 0; index < argc-1; ++index) free(identifiers[index]);
+    for (index = 0; index < argc-1; ++index) free(identifiers[index]);
 
-	return 0;
+    return 0;
 }

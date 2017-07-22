@@ -1,19 +1,19 @@
-#include <stdio.h>
 #include <hap.h>
+#include <stdio.h>
 
 
 typedef struct HAPModule {
-	void* (*create)(HAPEngine *engine);
-	void (*load)(HAPEngine *engine, void *state, char *identifier);
-	HAPTime (*update)(HAPEngine *engine, void* state);
-	void (*unload)(HAPEngine *engine, void* state);
-	void (*destroy)(HAPEngine *engine, void* state);
+    void* (*create)(HAPEngine *engine);
+    void (*load)(HAPEngine *engine, void *state, char *identifier);
+    HAPTime (*update)(HAPEngine *engine, void* state);
+    void (*unload)(HAPEngine *engine, void* state);
+    void (*destroy)(HAPEngine *engine, void* state);
 
-	HAPTime nextUpdate;
+    HAPTime nextUpdate;
 
-	char *identifier;
-	void *ref;
-	void *state;
+    char *identifier;
+    void *ref;
+    void *state;
 } HAPModule;
 
 
