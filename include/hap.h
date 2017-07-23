@@ -23,6 +23,12 @@ typedef enum {
     LOGLEVEL_INFO    = 30,
 } HAPLogLevel;
 
+
+HAPEngine* hap_engine_create(char *name);
+void hap_engine_destroy(HAPEngine* engine);
+void* hap_module_execute(HAPEngine *engine, const short numModules, char *identifiers[]);
+
+
 struct timeState {
     HAPTime currentTime;
     HAPTime timeDelta;
@@ -48,11 +54,6 @@ struct HAPEngine {
     bool (*log_error)(HAPEngine *engine, char *message, ...);
     void (*log_fatal_error)(HAPEngine *engine, int code, char *message, ...);
 };
-
-
-HAPEngine* hap_engine_create(char *name);
-void* hap_module_execute(HAPEngine *engine, const short numModules, char *identifiers[]);
-void hap_engine_destroy(HAPEngine* engine);
 
 
 #endif
