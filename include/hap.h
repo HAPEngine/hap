@@ -9,20 +9,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
+typedef double Unit;
 typedef long double HAPTime;
-typedef struct timeState timeState;
 typedef struct HAPEngine HAPEngine;
+typedef struct timeState timeState;
 
 
-enum HAPLogLevel {
+typedef enum {
     LOGLEVEL_ERROR   = 5,
     LOGLEVEL_WARNING = 10,
     LOGLEVEL_NOTICE  = 20,
     LOGLEVEL_INFO    = 30,
-};
-
-
-typedef enum HAPLogLevel HAPLogLevel;
+} HAPLogLevel;
 
 struct timeState {
     HAPTime currentTime;
