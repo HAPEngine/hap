@@ -1,5 +1,6 @@
 ## Hap
 
+[![CircleCI](https://img.shields.io/circleci/project/github/HAPEngine/HAPEngine.svg?style=flat-square)]()
 [![GitHub issues](https://img.shields.io/github/issues/HAPEngine/HAPEngine.svg?style=flat-square)](https://github.com/HAPEngine/HAPEngine/issues)
 [![GitHub forks](https://img.shields.io/github/forks/HAPEngine/HAPEngine.svg?style=flat-square)](https://github.com/HAPEngine/HAPEngine/network)
 [![GitHub stars](https://img.shields.io/github/stars/HAPEngine/HAPEngine.svg?style=flat-square)](https://github.com/HAPEngine/HAPEngine/stargazers)
