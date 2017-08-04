@@ -5,18 +5,27 @@
 #include "logging.h"
 
 
+#define LOGLEVEL(fn, constant, io) bool fn(HAPEngine *engine, char *message, ...) { \
+    va_list arguments;                                                                      \
+    va_start(arguments, message);                                                           \
+    if (!hap_log_necessary(engine, constant)) return false;                      \
+    hap_log(engine, io, message, arguments);                                                \
+    va_end(arguments);                                                                      \
+    return true;                                                                            \
+}
+
+
 bool hap_log_necessary(HAPEngine *engine, HAPLogLevel level) {
     return (*engine).logLevel >= level;
 }
 
 
-void hap_log(HAPEngine *engine, FILE *dest, char *message, ...) {
+void hap_log(HAPEngine *engine, FILE *dest, char *message, va_list arguments) {
     char *strBuffer;
     int length;
-    va_list arguments, checkLengthArguments;
+    va_list checkLengthArguments;
 
     // The first call to vsprintf gets the length of the resulting string
-    va_start(arguments, message);
     va_copy(checkLengthArguments, arguments);
 
     length = vsnprintf(NULL, 0, message, checkLengthArguments);
@@ -32,8 +41,6 @@ void hap_log(HAPEngine *engine, FILE *dest, char *message, ...) {
 
     if (length < 0) exit(505);
 
-    va_end(arguments);
-
     // Finally, output the result with the prefix to dest
     fprintf(dest, "[%s] %s\n", (*engine).name, strBuffer);
 
@@ -41,42 +48,17 @@ void hap_log(HAPEngine *engine, FILE *dest, char *message, ...) {
 }
 
 
-bool hap_log_debug(HAPEngine *engine, char *message, ...) {
-    if (!hap_log_necessary(engine, LOGLEVEL_DEBUG)) return false;
-    hap_log(engine, stdout, message);
-    return true;
-}
-
-
-bool hap_log_info(HAPEngine *engine, char *message, ...) {
-    if (!hap_log_necessary(engine, LOGLEVEL_INFO)) return false;
-    hap_log(engine, stdout, message);
-    return true;
-}
-
-
-bool hap_log_notice(HAPEngine *engine, char *message, ...) {
-    if (!hap_log_necessary(engine, LOGLEVEL_NOTICE)) return false;
-    hap_log(engine, stdout, message);
-    return true;
-}
-
-
-bool hap_log_warning(HAPEngine *engine, char *message, ...) {
-    if (!hap_log_necessary(engine, LOGLEVEL_WARNING)) return false;
-    hap_log(engine, stderr, message);
-    return true;
-}
-
-
-bool hap_log_error(HAPEngine *engine, char *message, ...) {
-    if (!hap_log_necessary(engine, LOGLEVEL_ERROR)) return false;
-    hap_log(engine, stderr, message);
-    return true;
-}
+LOGLEVEL(hap_log_debug, LOGLEVEL_DEBUG, stdout)
+LOGLEVEL(hap_log_info, LOGLEVEL_INFO, stdout)
+LOGLEVEL(hap_log_notice, LOGLEVEL_NOTICE, stdout)
+LOGLEVEL(hap_log_warning, LOGLEVEL_WARNING, stderr)
+LOGLEVEL(hap_log_error, LOGLEVEL_ERROR, stderr)
 
 
 void hap_log_fatal_error(HAPEngine *engine, int code, char *message, ...) {
-    if (hap_log_necessary(engine, LOGLEVEL_FATAL)) hap_log(engine, stderr, message);
+    va_list arguments;
+    va_start(arguments, message);
+    if (hap_log_necessary(engine, LOGLEVEL_FATAL)) hap_log(engine, stderr, message, arguments);
+    va_end(arguments);
     exit(code);
 }

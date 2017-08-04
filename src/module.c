@@ -112,7 +112,7 @@ void* hap_module_execute(HAPEngine *engine, const short numModules, char *identi
     HAPModule **modules = (HAPModule**) calloc(numModules, sizeof(HAPModule*));
 
     for (index = 0; index < numModules; ++index) {
-        printf("[hap] Creating module: %s\n", identifiers[index]);
+        printf("Creating module: %s\n", identifiers[index]);
         modules[index] = hap_module_create(engine, identifiers[index]);
 
         // Creating a module failed, so destroy previously created ones
@@ -129,12 +129,12 @@ void* hap_module_execute(HAPEngine *engine, const short numModules, char *identi
     }
 
     for (index = 0; index < numModules; ++index) {
-        printf("[hap] Loading module: %s\n", identifiers[index]);
+        printf("Loading module: %s\n", identifiers[index]);
         hap_module_load(engine, modules[index]);
     }
 
 
-    printf("[hap] All modules loaded.\n");
+    printf("All modules loaded.\n");
 
     time = (*engine).time;
 
@@ -162,9 +162,9 @@ HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
 #endif
 
     if ((*module).ref == NULL) {
-        (*engine).log_error(engine, "[hap] Failed to load module: %s\n", (*module).identifier);
+        (*engine).log_error(engine, "Failed to load module: %s\n", (*module).identifier);
 #ifndef OS_Windows
-        (*engine).log_error(engine, "[hap] Error was: %s\n\n", dlerror());
+        (*engine).log_error(engine, "Error was: %s\n\n", dlerror());
 #endif
 
         hap_module_destroy(engine, module);
@@ -189,11 +189,11 @@ HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
 #pragma GCC diagnostic pop
 #endif
 
-    if ((*module).create == NULL) (*engine).log_error(engine, "[hap] Warning: Module '%s' does not export 'create'.\n", (*module).identifier);
-    if ((*module).load == NULL) (*engine).log_error(engine, "[hap] Warning: Module '%s' does not export 'load'.\n", (*module).identifier);
-    if ((*module).update == NULL) (*engine).log_error(engine, "[hap] Warning: Module '%s' does not export 'update'\n", (*module).identifier);
-    if ((*module).unload == NULL) (*engine).log_error(engine, "[hap] Warning: Module '%s' does not export 'unload'\n", (*module).identifier);
-    if ((*module).destroy == NULL) (*engine).log_error(engine, "[hap] Warning: Module '%s' does not export 'destroy'\n", (*module).identifier);
+    if ((*module).create == NULL) (*engine).log_error(engine, "Warning: Module '%s' does not export 'create'.\n", (*module).identifier);
+    if ((*module).load == NULL) (*engine).log_error(engine, "Warning: Module '%s' does not export 'load'.\n", (*module).identifier);
+    if ((*module).update == NULL) (*engine).log_error(engine, "Warning: Module '%s' does not export 'update'\n", (*module).identifier);
+    if ((*module).unload == NULL) (*engine).log_error(engine, "Warning: Module '%s' does not export 'unload'\n", (*module).identifier);
+    if ((*module).destroy == NULL) (*engine).log_error(engine, "Warning: Module '%s' does not export 'destroy'\n", (*module).identifier);
 
     if ((*module).create != NULL)
         (*module).state = (*module).create(engine);

@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 
 typedef double Unit;
@@ -60,7 +61,7 @@ struct HAPEngine {
     HAPLogLevel logLevel;
     HapConfiguration *configuration;
 
-    void (*log)(HAPEngine *engine, FILE* dest, char *message, ...);
+    void (*log)(HAPEngine *engine, FILE* dest, char *message, va_list arguments);
     bool (*log_debug)(HAPEngine *engine, char *message, ...);
     bool (*log_info)(HAPEngine *engine, char *message, ...);
     bool (*log_notice)(HAPEngine *engine, char *message, ...);

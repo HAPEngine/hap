@@ -10,4 +10,4 @@ bool hap_log_error(HAPEngine *engine, char *message, ...);
 void hap_log_fatal_error(HAPEngine *engine, int code, char *message, ...);
 
 
-void hap_log(HAPEngine *engine, FILE* dest, char *message, ...);
+void hap_log(HAPEngine *engine, FILE *dest, char *message, va_list arguments);

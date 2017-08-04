@@ -8,10 +8,6 @@
 #define MAX_LOADABLE_MODULES 256
 #endif
 
-#ifndef _strdup
-#define _strdup strdup
-#endif
-
 
 int hap_standard_entry(char *name, int argc, char **argv) {
     char *currentModule;
@@ -19,7 +15,7 @@ int hap_standard_entry(char *name, int argc, char **argv) {
     char **identifiers;
     int index;
 
-    if (argc >= 2) configurationIdentifier = argv[1];
+    if (argc > 1) configurationIdentifier = argv[1];
     else configurationIdentifier = name;
 
     HAPEngine *engine = hap_engine_create(NULL, configurationIdentifier);
@@ -28,16 +24,18 @@ int hap_standard_entry(char *name, int argc, char **argv) {
 
     identifiers = calloc((*(*engine).configuration).totalSections, sizeof(char*));
 
+    if (identifiers == NULL) return 2;
+
     (*engine).argc = &argc;
     (*engine).argvp = argv;
 
     for (index = 0; index < (*(*engine).configuration).totalSections; ++index) {
         currentModule = (*(*(*engine).configuration).sections[index]).name;
         (*engine).log_info(engine, "Loading module: %s\n", currentModule);
-        identifiers[index] = _strdup(currentModule);
+        identifiers[index] = currentModule;
     }
 
-    hap_module_execute(engine, argc - 1, identifiers);
+    hap_module_execute(engine, (*(*engine).configuration).totalSections, identifiers);
     hap_engine_destroy(engine);
 
     for (index = 0; index < (*(*engine).configuration).totalSections; ++index)
