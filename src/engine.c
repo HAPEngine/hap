@@ -5,7 +5,7 @@
 #include "timer.h"
 
 
-HAPEngine* hap_engine_create(char *name) {
+HAPEngine* hap_engine_create(char *name, char *configuration) {
     if (name == NULL)
         name = "HAP";
 
@@ -25,6 +25,12 @@ HAPEngine* hap_engine_create(char *name) {
     (*engine).log_fatal_error = hap_log_fatal_error;
 
     (*engine).log_notice(engine, "Initialized engine.\n");
+
+    (*engine).configuration = hap_configuration_load(engine, configuration);
+    if ((*engine).configuration == NULL) {
+        free(engine);
+        return NULL;
+    }
 
     return engine;
 }

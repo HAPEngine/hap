@@ -6,29 +6,36 @@
 
 
 bool hap_log_necessary(HAPEngine *engine, HAPLogLevel level) {
-    return (*engine).logLevel <= level;
+    return (*engine).logLevel >= level;
 }
 
 
 void hap_log(HAPEngine *engine, FILE *dest, char *message, ...) {
-    va_list arguments, argumentsCopy;
+    char *strBuffer;
+    int length;
+    va_list arguments, checkLengthArguments;
 
     // The first call to vsprintf gets the length of the resulting string
     va_start(arguments, message);
-    va_copy(argumentsCopy, arguments);
-    size_t length = vsnprintf(NULL, 0, message, argumentsCopy);
-    va_end(argumentsCopy);
+    va_copy(checkLengthArguments, arguments);
 
-    char *strBuffer = calloc(length, sizeof(char));
+    length = vsnprintf(NULL, 0, message, checkLengthArguments);
 
-    if (strBuffer == NULL) exit(500);
+    if (length < 0) exit(500);
+
+    strBuffer = calloc(length+1, sizeof(char));
+
+    if (strBuffer == NULL) exit(510);
 
     // Second call to vsprintf for formatting the given message string
-    vsnprintf(strBuffer, length, message, arguments);
+    length = vsnprintf(strBuffer, length+1, message, arguments);
+
+    if (length < 0) exit(505);
+
     va_end(arguments);
 
     // Finally, output the result with the prefix to dest
-    fprintf(dest, "[%s] %s", (*engine).name, message);
+    fprintf(dest, "[%s] %s\n", (*engine).name, strBuffer);
 
     free(strBuffer);
 }
@@ -63,6 +70,6 @@ bool hap_log_error(HAPEngine *engine, char *message, ...) {
 
 
 void hap_log_fatal_error(HAPEngine *engine, int code, char *message, ...) {
-    hap_log(engine, stderr, message);
+    if (hap_log_necessary(engine, LOGLEVEL_FATAL)) hap_log(engine, stderr, message);
     exit(code);
 }

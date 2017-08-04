@@ -12,11 +12,18 @@
 
 typedef double Unit;
 typedef long double HAPTime;
+
 typedef struct HAPEngine HAPEngine;
 typedef struct timeState timeState;
 
+typedef struct HapConfiguration HapConfiguration;
+typedef struct HapConfigurationOption  HapConfigurationOption;
+typedef struct HapConfigurationSection HapConfigurationSection;
+typedef union  HapConfigurationValue   HapConfigurationValue;
+
 
 typedef enum {
+    LOGLEVEL_FATAL   = 0,
     LOGLEVEL_ERROR   = 5,
     LOGLEVEL_WARNING = 10,
     LOGLEVEL_NOTICE  = 20,
@@ -24,9 +31,14 @@ typedef enum {
 } HAPLogLevel;
 
 
-HAPEngine* hap_engine_create(char *name);
-void hap_engine_destroy(HAPEngine* engine);
-void* hap_module_execute(HAPEngine *engine, const short numModules, char *identifiers[]);
+typedef enum {
+    HAP_CONFIGURATION_BOOL = 0,
+    HAP_CONFIGURATION_DOUBLE = 1,
+    HAP_CONFIGURATION_FLOAT = 2,
+    HAP_CONFIGURATION_STRING = 3,
+
+    HAP_CONFIGURATION_UNIT = 10,
+} HapConfigurationValueType;
 
 
 struct timeState {
@@ -40,12 +52,12 @@ struct timeState {
 struct HAPEngine {
     char *name;
 
-    timeState *time;
-
-    HAPLogLevel logLevel;
-
     int  *argc;
     char **argvp;
+
+    timeState *time;
+    HAPLogLevel logLevel;
+    HapConfiguration *configuration;
 
     void (*log)(HAPEngine *engine, FILE* dest, char *message, ...);
     bool (*log_info)(HAPEngine *engine, char *message, ...);
@@ -55,5 +67,37 @@ struct HAPEngine {
     void (*log_fatal_error)(HAPEngine *engine, int code, char *message, ...);
 };
 
+
+struct HapConfigurationOption {
+    char *key;
+    char *value;
+};
+
+
+struct HapConfigurationSection {
+    char *name;
+
+    short totalOptions;
+    HapConfigurationOption **options;
+};
+
+
+struct HapConfiguration {
+    short totalSections;
+    HapConfigurationSection **sections;
+
+    short totalGlobals;
+    HapConfigurationOption **globals;
+};
+
+// Standard entry function. Most apps need no more than this.
+int hap_standard_entry(char *name, int argc, char **argv);
+
+HAPEngine* hap_engine_create(char *name, char *configuration);
+void hap_engine_destroy(HAPEngine* engine);
+void* hap_module_execute(HAPEngine *engine, const short numModules, char *identifiers[]);
+
+HapConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier);
+void hap_configuration_destroy(HapConfiguration *config);
 
 #endif
