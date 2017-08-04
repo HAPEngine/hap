@@ -168,14 +168,30 @@ HapConfigurationOption* hap_configuration_process_option(HAPConfigurationToken *
 
     if ((*option).value == NULL) {
         free((*option).key);
+        free(option);
+
         return NULL;
     }
 
     if ((*option).key == NULL) return NULL;
     if ((*option).value == NULL) return NULL;
 
-    snprintf((*option).key, keyLength, "%s", key);
-    snprintf((*option).value, valueLength, "%s", value);
+    if (snprintf((*option).key, keyLength, "%s", key) == -1) {
+        free(key);
+        free(value);
+
+        return NULL;
+    }
+
+    if (snprintf((*option).value, valueLength, "%s", value) == -1) {
+        free(key);
+        free(value);
+        free((*option).key);
+        free((*option).value);
+        free(option);
+
+        return NULL;
+    }
 
     return option;
 }
