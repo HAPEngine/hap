@@ -17,7 +17,7 @@ int hap_standard_entry(char *name, int argc, char **argv) {
     char *configurationIdentifier;
     int index;
 
-    if (argc < 2) configurationIdentifier = NULL;
+    if (argc == 1) configurationIdentifier = NULL;
     else configurationIdentifier = argv[1];
 
     HAPEngine *engine = hap_engine_create(NULL, configurationIdentifier);

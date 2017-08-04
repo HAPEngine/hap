@@ -9,6 +9,9 @@ HAPEngine* hap_engine_create(char *name, char *configuration) {
     if (name == NULL)
         name = "HAP";
 
+    if (configuration == NULL)
+        configuration = "system";
+
     HAPEngine *engine = calloc(1, sizeof(HAPEngine));
 
     if (engine == NULL) return NULL;
@@ -28,6 +31,7 @@ HAPEngine* hap_engine_create(char *name, char *configuration) {
     (*engine).log_info(engine, "Initializing\n");
 
     (*engine).configuration = hap_configuration_load(engine, configuration);
+
     if ((*engine).configuration == NULL) {
         free(engine);
         return NULL;

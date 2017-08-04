@@ -58,6 +58,7 @@ HAPConfigurationToken* hap_configuration_token_next(FILE *file) {
 
     if ((*token).value == NULL) {
         free(token);
+        token = NULL;
         return NULL;
     }
 
@@ -98,6 +99,7 @@ HAPConfigurationToken* hap_configuration_token_next(FILE *file) {
 
             if ((*token).value == NULL) {
                 free(token);
+                token = NULL;
                 return NULL;
             }
         }
@@ -111,6 +113,8 @@ HAPConfigurationToken* hap_configuration_token_next(FILE *file) {
     }
 
     funlockfile(file);
+    fclose(file);
+
     return token;
 }
 
@@ -225,6 +229,8 @@ HapConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier) {
 
     file = hap_configuration_file(engine, fileName);
 
+    if (file == NULL) return NULL;
+
     for (;;) {
         token = hap_configuration_token_next(file);
 
@@ -236,7 +242,7 @@ HapConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier) {
         if (token == NULL) {
             (*engine).log_error(
                 engine,
-                "Failed to load configuration file: %s",
+                "Failed to load token in: %s",
                 fileName
             );
 
@@ -250,6 +256,7 @@ HapConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier) {
 
         if ((*token).type == FINISHED) {
             free(token);
+            token = NULL;
             break;
         }
 
