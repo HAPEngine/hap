@@ -7,10 +7,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 #define DEFAULT_CONFIG_EXTENSION ".ini"
 #define HAP_CONFIG_TOKEN_VALUE_BUFFER_SIZE 16
-
+#define CHARACTER_IS_WHITESPACE(cursor) (cursor == ' ' || cursor == '\n' || cursor == '\r' || cursor == '\t' || cursor == '\0')
 
 typedef enum {
     NONE,
@@ -42,68 +41,68 @@ FILE* hap_configuration_file(HAPEngine *engine, char *fileName) {
 
 
 HAPConfigurationToken* hap_configuration_token_next(FILE *file) {
-    size_t valAllocatedSize;
-    short valIndex;
     char cursor;
+    short valueIndex, allocatedValueSize;
 
     HAPConfigurationToken *token;
 
     token = calloc(1, sizeof(HAPConfigurationToken));
-
     if (token == NULL) return NULL;
 
+    valueIndex = 0;
+    allocatedValueSize = HAP_CONFIG_TOKEN_VALUE_BUFFER_SIZE;
+
     (*token).type = NONE;
-    valAllocatedSize = HAP_CONFIG_TOKEN_VALUE_BUFFER_SIZE;
-    (*token).value = calloc(valAllocatedSize, sizeof(char));
+    (*token).value = calloc(allocatedValueSize, sizeof(char));
 
     if ((*token).value == NULL) {
         free(token);
         return NULL;
     }
 
-    if (feof(file)) {
-        (*token).type = FINISHED;
-        (*token).value = NULL;
-
-        return token;
-    }
-
     for (flockfile(file); !feof(file);) {
         cursor = getc_unlocked(file);
 
-        if ((*token).type == SECTION && cursor == ']') break;
-        else if ((*token).type == NONE && (cursor == ' ' || cursor == '\n')) continue;
-        else if (cursor == '\n') break;
+        if (cursor == -1) {
+            (*token).type = FINISHED;
+            (*token).value = "";
+            break;
 
-        if (cursor == '[') {
-            valIndex = 0;
+        } else if ((*token).type == NONE) {
+            if CHARACTER_IS_WHITESPACE(cursor) {
+                continue;
 
-            (*token).type = SECTION;
+            } else if (cursor == '[' || cursor == '!') {
+                (*token).type = SECTION;
+                continue;
+
+            } else {
+                (*token).type = OPTION;
+            }
+
+        } else if ((*token).type == SECTION && (cursor == ']' || cursor == '\n')) {
+            break;
+
+        } else if ((*token).type == OPTION && cursor == '\n') {
+            break;
+        }
+
+        if (valueIndex == allocatedValueSize-1) {
+            allocatedValueSize = (HAP_CONFIG_TOKEN_VALUE_BUFFER_SIZE % valueIndex) * HAP_CONFIG_TOKEN_VALUE_BUFFER_SIZE * sizeof(char);
+            (*token).value = realloc((*token).value, allocatedValueSize);
 
             if ((*token).value == NULL) {
-                funlockfile(file);
                 free(token);
                 return NULL;
             }
+        }
 
+        if (valueIndex == 0 && CHARACTER_IS_WHITESPACE(cursor))
             continue;
-        }
 
-        if (valIndex >= valAllocatedSize) {
-            valAllocatedSize = (HAP_CONFIG_TOKEN_VALUE_BUFFER_SIZE % valIndex) * HAP_CONFIG_TOKEN_VALUE_BUFFER_SIZE * sizeof(char);
-            (*token).value = realloc((*token).value, valAllocatedSize);
+        (*token).value[valueIndex] = cursor;
 
-            if ((*token).value == NULL) {
-                free(token);
-                funlockfile(file);
-                return NULL;
-            }
-        }
-
-        if ((*token).type == NONE) (*token).type = OPTION;
-
-        (*token).value[valIndex] = cursor;
-        ++valIndex;
+        ++valueIndex;
     }
 
     funlockfile(file);
@@ -118,11 +117,9 @@ char *hap_configuration_filename(HAPEngine *engine, char *identifier) {
     if (identifier == NULL) identifier = (*engine).name;
 
     fileNameLength = snprintf(NULL, 0, "%s%s", identifier, DEFAULT_CONFIG_EXTENSION);
-
     if (fileNameLength < 0) return NULL;
 
     fileName = calloc(fileNameLength, sizeof(char));
-
     if (fileName == NULL) return NULL;
 
     fileNameLength = snprintf(fileName, fileNameLength+1, "%s%s", identifier, DEFAULT_CONFIG_EXTENSION);
@@ -160,11 +157,11 @@ HapConfigurationOption* hap_configuration_process_option(HAPConfigurationToken *
     keyLength = snprintf(NULL, 0, "%s", key);
     valueLength = snprintf(NULL, 0, "%s", value);
 
-    (*option).key = calloc(keyLength, sizeof(char));
+    (*option).key = calloc(keyLength+1, sizeof(char));
 
     if ((*option).key == NULL) return NULL;
 
-    (*option).value = calloc(valueLength, sizeof(char));
+    (*option).value = calloc(valueLength+1, sizeof(char));
 
     if ((*option).value == NULL) {
         free((*option).key);
@@ -176,14 +173,14 @@ HapConfigurationOption* hap_configuration_process_option(HAPConfigurationToken *
     if ((*option).key == NULL) return NULL;
     if ((*option).value == NULL) return NULL;
 
-    if (snprintf((*option).key, keyLength, "%s", key) == -1) {
+    if (snprintf((*option).key, keyLength+1, "%s", key) == -1) {
         free(key);
         free(value);
 
         return NULL;
     }
 
-    if (snprintf((*option).value, valueLength, "%s", value) == -1) {
+    if (snprintf((*option).value, valueLength+1, "%s", value) == -1) {
         free(key);
         free(value);
         free((*option).key);
