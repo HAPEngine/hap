@@ -15,6 +15,7 @@ typedef enum {
     NONE,
     SECTION,
     OPTION,
+    COMMENT,
     FINISHED,
 } HAPConfigurationTokenType;
 
@@ -74,6 +75,10 @@ HAPConfigurationToken* hap_configuration_token_next(FILE *file) {
 
             } else if (cursor == '[' || cursor == '!') {
                 (*token).type = SECTION;
+                continue;
+
+            } else if (cursor == '#') {
+                (*token).type = COMMENT;
                 continue;
 
             } else {
@@ -220,6 +225,11 @@ HapConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier) {
 
     for (;;) {
         token = hap_configuration_token_next(file);
+
+        (*engine).log_debug(
+            engine, "config\t%s\t%d\t%s",
+            fileName, (*token).type, (*token).value
+        );
 
         if (token == NULL) {
             (*engine).log_error(

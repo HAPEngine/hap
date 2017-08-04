@@ -28,6 +28,7 @@ typedef enum {
     LOGLEVEL_WARNING = 10,
     LOGLEVEL_NOTICE  = 20,
     LOGLEVEL_INFO    = 30,
+    LOGLEVEL_DEBUG   = 50,
 } HAPLogLevel;
 
 
@@ -60,6 +61,7 @@ struct HAPEngine {
     HapConfiguration *configuration;
 
     void (*log)(HAPEngine *engine, FILE* dest, char *message, ...);
+    bool (*log_debug)(HAPEngine *engine, char *message, ...);
     bool (*log_info)(HAPEngine *engine, char *message, ...);
     bool (*log_notice)(HAPEngine *engine, char *message, ...);
     bool (*log_warning)(HAPEngine *engine, char *message, ...);

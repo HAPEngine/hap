@@ -18,6 +18,7 @@ HAPEngine* hap_engine_create(char *name, char *configuration) {
     (*engine).logLevel = LOGLEVEL_INFO;
 
     (*engine).log = hap_log;
+    (*engine).log_debug = hap_log_debug;
     (*engine).log_info = hap_log_info;
     (*engine).log_notice = hap_log_notice;
     (*engine).log_warning = hap_log_warning;

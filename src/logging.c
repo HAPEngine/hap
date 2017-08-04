@@ -41,6 +41,13 @@ void hap_log(HAPEngine *engine, FILE *dest, char *message, ...) {
 }
 
 
+bool hap_log_debug(HAPEngine *engine, char *message, ...) {
+    if (!hap_log_necessary(engine, LOGLEVEL_DEBUG)) return false;
+    hap_log(engine, stdout, message);
+    return true;
+}
+
+
 bool hap_log_info(HAPEngine *engine, char *message, ...) {
     if (!hap_log_necessary(engine, LOGLEVEL_INFO)) return false;
     hap_log(engine, stdout, message);
