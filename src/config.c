@@ -219,6 +219,8 @@ HapConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier) {
 
     fileName = hap_configuration_filename(engine, identifier);
 
+    (*engine).log_debug(engine, "Loading configuration file: %s", fileName);
+
     if (fileName == NULL) return NULL;
 
     file = hap_configuration_file(engine, fileName);

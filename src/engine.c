@@ -25,7 +25,7 @@ HAPEngine* hap_engine_create(char *name, char *configuration) {
     (*engine).log_error = hap_log_error;
     (*engine).log_fatal_error = hap_log_fatal_error;
 
-    (*engine).log_notice(engine, "Initialized engine.\n");
+    (*engine).log_info(engine, "Initializing\n");
 
     (*engine).configuration = hap_configuration_load(engine, configuration);
     if ((*engine).configuration == NULL) {
