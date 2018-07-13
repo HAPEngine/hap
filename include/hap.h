@@ -1,14 +1,11 @@
-#ifndef __HAP_INCLUDED__
-#define __HAP_INCLUDED__
+#ifndef __HAP_H_
+#define __HAP_H_
 
-#ifdef OS_Windows
-#include <Windows.h>
-#endif
-
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <stdarg.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 
 typedef double Unit;

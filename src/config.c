@@ -1,15 +1,10 @@
-#ifndef __HAP_H
-
-
 #include <hap.h>
-#include <stdbool.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #define DEFAULT_CONFIG_EXTENSION ".ini"
 #define HAP_CONFIG_TOKEN_VALUE_BUFFER_SIZE 16
 #define CHARACTER_IS_WHITESPACE(cursor) (cursor == ' ' || cursor == '\n' || cursor == '\r' || cursor == '\t' || cursor == '\0')
+
 
 typedef enum {
     NONE,
@@ -58,12 +53,11 @@ HAPConfigurationToken* hap_configuration_token_next(FILE *file) {
 
     if ((*token).value == NULL) {
         free(token);
-        token = NULL;
         return NULL;
     }
 
     for (flockfile(file); !feof(file);) {
-        cursor = getc_unlocked(file);
+        cursor = getc(file);
 
         if (cursor == -1) {
             (*token).type = FINISHED;
@@ -99,7 +93,7 @@ HAPConfigurationToken* hap_configuration_token_next(FILE *file) {
 
             if ((*token).value == NULL) {
                 free(token);
-                token = NULL;
+                funlockfile(file);
                 return NULL;
             }
         }
@@ -108,7 +102,6 @@ HAPConfigurationToken* hap_configuration_token_next(FILE *file) {
             continue;
 
         (*token).value[valueIndex] = cursor;
-
         ++valueIndex;
     }
 
@@ -307,7 +300,3 @@ HapConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier) {
 void hap_configuration_destroy(HapConfiguration *config) {
     free(config);
 }
-
-
-#define __HAP_H
-#endif
