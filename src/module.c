@@ -57,58 +57,83 @@ HAPModule* _hap_module_update_loop(HAPEngine *engine, short numModules, HAPModul
     HAPTime actualTime;
     HAPTime actualTimeDelta;
 
-    timeState time = (*(*engine).time);
+    HAPTime sleepTime;
+    HAPTime nextUpdateDelta;
 
     int x = 0;
-
     for (; x < 100;) {
         ++x;
 
-        (*engine).log_notice(engine, "%d\n", x);
+        // Set simulated timings to the values that they were during the last
+        // time that the timer was updated.
+        simulatedTime = (*(*engine).time).currentTime;
+        simulatedTimeDelta = (*(*engine).time).timeDelta;
 
-        simulatedTime = time.currentTime;
-        simulatedTimeDelta = time.timeDelta;
-
+        // Update our timer so that we know how much time has passed since the
+        // previous simulation occured.
         hap_timer_update((*engine).time);
 
-        actualTime = time.currentTime;
-        actualTimeDelta = time.timeDelta;
+        // Store the actual time locally so that we can use *(*engine).time as
+        // a cursor which allows modules to use it to get timing information.
+        actualTime = (*(*engine).time).currentTime;
+        actualTimeDelta = (*(*engine).time).timeDelta;
 
+        // Assign sleepTime so that we know how many milliseconds to sleep.
+        // This allows us to ensure that a maximum framerate can be set.
+        sleepTime = MIN_SIMULATION_FRAME_TIME - actualTimeDelta;
+
+        // Ensure that we don't simulate more often than we are told to
         if (actualTimeDelta < MIN_SIMULATION_FRAME_TIME) {
-            hap_timer_update(&time);
+#ifdef OS_Window}
+            Sleep(sleepTime);
+#else
+            usleep(sleepTime);
+#endif
 
-            actualTime = time.currentTime;
-            actualTimeDelta = time.timeDelta;
-            continue;
+            hap_timer_update((*engine).time);
+
+            actualTime = (*(*engine).time).currentTime;
+            actualTimeDelta = (*(*engine).time).timeDelta;
         }
 
         while (simulatedTime < actualTime) {
+            // Ensure that we never simulate faster than the maxmimum allowed
+            // delta, which should provide us a reasonable way to ensure
+            // physics-related and similar checks don't miss collisions.
             if (simulatedTimeDelta > MAX_SIMULATION_FRAME_TIME)
                 simulatedTimeDelta = MAX_SIMULATION_FRAME_TIME;
 
-            time.currentTime = simulatedTime;
-            time.timeDelta = simulatedTimeDelta;
+            // Patch currentTime with simulatedTime so that modules don't
+            // get bad timing information while updating the scene state.
+            (*(*engine).time).currentTime = simulatedTime;
+            (*(*engine).time).timeDelta = simulatedTimeDelta;
 
+            // Run update() to continue simulating with each module
             for (index = 0; index < numModules; ++index) {
+                // If the module has requested that we don't update this often,
+                // honor that request and sae some time by skipping it.
                 if ((*modules[index]).nextUpdate > simulatedTime) continue;
 
-                (*modules[index]).nextUpdate = hap_module_update(engine, modules[index]);
+                // Get the next update time from the module.
+                nextUpdateDelta = hap_module_update(engine, modules[index]);
+                (*modules[index]).nextUpdate = simulatedTime + nextUpdateDelta;
 
-                if ((*modules[index]).nextUpdate < 0) return modules[index];
-
-                (*modules[index]).nextUpdate += simulatedTime;
+                // A negative timing means "never update again", which - for
+                // now - tells the engine that the module either had a fatal
+                // error or is otherwise requsting that we stop the simulation
+                // for one reason or another.
+                if (nextUpdateDelta < 0) return modules[index];
             }
 
-            time.currentTime = actualTime;
-
+            // For each simulation of MAX_SIMULATION_FRAME_TIME size, bring
+            // simulatedTime / simulatedTimeDelta one step closer to
+            // actualTime.
             simulatedTime += simulatedTimeDelta;
             simulatedTimeDelta = actualTime - simulatedTime;
         }
 
-        // After simulation is complete, render the final scene
-        for (index = 0; index < numModules; ++index) {
-            hap_module_render(engine, modules[index]);
-        }
+        // Simulation is complete, so render the final scene
+        for (index = 0; index < numModules; ++index) hap_module_render(engine, modules[index]);
     }
 
     return NULL;
