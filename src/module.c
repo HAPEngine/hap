@@ -81,7 +81,7 @@ HAPModule* _hap_module_update_loop(HAPEngine *engine, short numModules, HAPModul
 
         // Ensure that we don't simulate more often than we are told to
         if (actualTimeDelta < MIN_SIMULATION_FRAME_TIME) {
-#ifdef OS_Window}
+#ifdef OS_Window
             Sleep(sleepTime);
 #else
             // Unix usleep takes microseconds, so convert to milliseconds.
@@ -139,15 +139,33 @@ HAPModule* _hap_module_update_loop(HAPEngine *engine, short numModules, HAPModul
     return NULL;
 }
 
-void* hap_module_execute(HAPEngine *engine, const short numModules, char *identifiers[]) {
+void* hap_module_execute(HAPEngine *engine) {
     short index;
-    timeState *time;
+    short numModules = (*(*engine).configuration).totalSections;
 
+    char **identifiers = calloc(numModules, sizeof(char*));
+
+    HAPConfigurationSection **configurationSections = calloc(numModules, sizeof(HAPConfigurationSection*));;
     HAPModule **modules = (HAPModule**) calloc(numModules, sizeof(HAPModule*));
+
+    // Fail if we didn't get identifiers
+    if (identifiers == NULL) return NULL;
+
+    if (configurationSections == NULL) {
+        (*engine).log_error(engine, "Could not initialize module configuration information.");
+        free(identifiers);
+        return NULL;
+    }
+
+    for (index = 0; index < numModules; ++index) {
+        configurationSections[index] = &(*(*(*engine).configuration).sections[index]);
+        identifiers[index] = (*configurationSections[index]).name;
+        (*engine).log_info(engine, "Using module: %s", identifiers[index]);
+    }
 
     for (index = 0; index < numModules; ++index) {
         (*engine).log_debug(engine, "Creating module: %s\n", identifiers[index]);
-        modules[index] = hap_module_create(engine, identifiers[index]);
+        modules[index] = hap_module_create(identifiers[index], engine, configurationSections[index]);
 
         // Creating a module failed, so destroy previously created ones
         if (modules[index] == NULL) {
@@ -165,12 +183,16 @@ void* hap_module_execute(HAPEngine *engine, const short numModules, char *identi
     for (index = 0; index < numModules; ++index) {
         (*engine).log_debug(engine, "Loading module: %s\n", identifiers[index]);
         hap_module_load(engine, modules[index]);
+
+        // These arent' used at this point, so we can clean them up.
+        free(configurationSections[index]);
+        free(identifiers[index]);
     }
 
+    free(configurationSections);
+    free(identifiers);
 
     (*engine).log_notice(engine, "All modules loaded.\n");
-
-    time = (*engine).time;
 
     _hap_module_update_loop(engine, numModules, modules);
 
@@ -181,7 +203,7 @@ void* hap_module_execute(HAPEngine *engine, const short numModules, char *identi
     return (void*) modules;
 }
 
-HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
+HAPModule* hap_module_create(char *identifier, HAPEngine *engine, HAPConfigurationSection *configuration) {
     HAPModule *module = (HAPModule*) calloc(1, sizeof(HAPModule));
 
     if (module == NULL) return NULL;
@@ -207,7 +229,7 @@ HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
     }
 
 #ifdef OS_Windows
-    (*module).create = (void* (*)(HAPEngine* engine)) GetProcAddress((*module).ref, "create");
+    (*module).create = (void* (*)(HAPEngine* engine, HAPConfigurationSection *configuration)) GetProcAddress((*module).ref, "create");
     (*module).load = (void(*)(HAPEngine* engine, void *state, char *identifier)) GetProcAddress((*module).ref, "load");
     (*module).update = (haptime(*)(hapengine* engine, void *state)) getprocaddress((*module).ref, "update");
     (*module).render = (void(*)(hapengine* engine, void *state)) getprocaddress((*module).ref, "render");
@@ -216,7 +238,7 @@ HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
 #else
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"  /** TODO: Why doesn't `pendantic` allow these casts?... **/
-    (*module).create = (void* (*)(HAPEngine* engine)) dlsym((*module).ref, "create");
+    (*module).create = (void* (*)(HAPEngine* engine, HAPConfigurationSection *configuration)) dlsym((*module).ref, "create");
     (*module).load = (void (*)(HAPEngine* engine, void *state, char *identifier)) dlsym((*module).ref, "load");
     (*module).update = (HAPTime (*)(HAPEngine* engine, void *state)) dlsym((*module).ref, "update");
     (*module).render = (void (*)(HAPEngine* engine, void *state)) dlsym((*module).ref, "render");
@@ -232,7 +254,7 @@ HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
     if ((*module).destroy == NULL) (*engine).log_notice(engine, "Module '%s' does not export 'destroy'\n", (*module).identifier);
 
     if ((*module).create != NULL)
-        (*module).state = (*module).create(engine);
+        (*module).state = (*module).create(engine, configuration);
 
     return module;
 }
@@ -261,8 +283,8 @@ void _module_close_ref(void* ref) {
 }
 
 void hap_module_render(HAPEngine *engine, HAPModule *module) {
-    if ((*module).render == NULL) return 0;
-    return (*module).render(engine, (*module).state);
+    if ((*module).render == NULL) return;
+    (*module).render(engine, (*module).state);
 }
 
 void hap_module_destroy(HAPEngine *engine, HAPModule *module) {

@@ -14,10 +14,10 @@ typedef float HAPTime;
 typedef struct HAPEngine HAPEngine;
 typedef struct timeState timeState;
 
-typedef struct HapConfiguration HapConfiguration;
-typedef struct HapConfigurationOption  HapConfigurationOption;
-typedef struct HapConfigurationSection HapConfigurationSection;
-typedef union  HapConfigurationValue   HapConfigurationValue;
+typedef struct HAPConfiguration HAPConfiguration;
+typedef struct HAPConfigurationOption  HAPConfigurationOption;
+typedef struct HAPConfigurationSection HAPConfigurationSection;
+typedef union  HAPConfigurationValue   HAPConfigurationValue;
 
 
 typedef enum {
@@ -37,7 +37,7 @@ typedef enum {
     HAP_CONFIGURATION_STRING = 3,
 
     HAP_CONFIGURATION_UNIT = 10,
-} HapConfigurationValueType;
+} HAPConfigurationValueType;
 
 
 struct timeState {
@@ -56,7 +56,7 @@ struct HAPEngine {
 
     timeState *time;
     HAPLogLevel logLevel;
-    HapConfiguration *configuration;
+    HAPConfiguration *configuration;
 
     void (*log)(HAPEngine *engine, FILE* dest, char *message, va_list arguments);
     bool (*log_debug)(HAPEngine *engine, char *message, ...);
@@ -68,26 +68,26 @@ struct HAPEngine {
 };
 
 
-struct HapConfigurationOption {
+struct HAPConfigurationOption {
     char *key;
     char *value;
 };
 
 
-struct HapConfigurationSection {
+struct HAPConfigurationSection {
     char *name;
 
     short totalOptions;
-    HapConfigurationOption **options;
+    HAPConfigurationOption **options;
 };
 
 
-struct HapConfiguration {
+struct HAPConfiguration {
     short totalSections;
-    HapConfigurationSection **sections;
+    HAPConfigurationSection **sections;
 
     short totalGlobals;
-    HapConfigurationOption **globals;
+    HAPConfigurationOption **globals;
 };
 
 // Standard entry function. Most apps need no more than this.
@@ -95,9 +95,9 @@ int hap_standard_entry(char *name, int argc, char **argv);
 
 HAPEngine* hap_engine_create(char *name, char *configuration);
 void hap_engine_destroy(HAPEngine* engine);
-void* hap_module_execute(HAPEngine *engine, const short numModules, char *identifiers[]);
+void* hap_module_execute(HAPEngine *engine);
 
-HapConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier);
-void hap_configuration_destroy(HapConfiguration *config);
+HAPConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier);
+void hap_configuration_destroy(HAPConfiguration *config);
 
 #endif

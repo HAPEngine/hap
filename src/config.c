@@ -123,20 +123,20 @@ char *hap_configuration_filename(HAPEngine *engine, char *identifier) {
     return fileName;
 }
 
-HapConfigurationSection* hap_configuration_process_section(HAPConfigurationToken *token) {
-    HapConfigurationSection* section;
-    section = calloc(1, sizeof(HapConfigurationSection));
+HAPConfigurationSection* hap_configuration_process_section(HAPConfigurationToken *token) {
+    HAPConfigurationSection* section;
+    section = calloc(1, sizeof(HAPConfigurationSection));
     (*section).name = (*token).value;
     return section;
 }
 
-HapConfigurationOption* hap_configuration_process_option(HAPConfigurationToken *token) {
+HAPConfigurationOption* hap_configuration_process_option(HAPConfigurationToken *token) {
     size_t keyLength, valueLength;
     char *key, *value;
 
-    HapConfigurationOption *option;
+    HAPConfigurationOption *option;
 
-    option = calloc(1, sizeof(HapConfigurationOption));
+    option = calloc(1, sizeof(HAPConfigurationOption));
 
     if (option == NULL) return NULL;
 
@@ -184,19 +184,19 @@ HapConfigurationOption* hap_configuration_process_option(HAPConfigurationToken *
     return option;
 }
 
-HapConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier) {
+HAPConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier) {
     FILE *file;
     char *fileName;
 
-    HapConfiguration *config;
+    HAPConfiguration *config;
 
     HAPConfigurationToken token;
-    HapConfigurationOption *option;
-    HapConfigurationSection *section;
+    HAPConfigurationOption *option;
+    HAPConfigurationSection *section;
 
     section = NULL;
 
-    config = calloc(1, sizeof(HapConfiguration));
+    config = calloc(1, sizeof(HAPConfiguration));
 
     if (config == NULL) return NULL;
 
@@ -247,7 +247,7 @@ HapConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier) {
 
             section = hap_configuration_process_section(&token);
 
-            (*config).sections = realloc((*config).sections, (*config).totalSections * sizeof(HapConfigurationSection*));
+            (*config).sections = realloc((*config).sections, (*config).totalSections * sizeof(HAPConfigurationSection*));
             (*config).sections[(*config).totalSections-1] = section;
 
             if ((*config).sections[(*config).totalSections - 1] == NULL) {
@@ -260,13 +260,13 @@ HapConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier) {
             if (section == NULL) {
                 ++(*config).totalGlobals;
 
-                (*config).globals = realloc((*config).globals, (*config).totalGlobals * sizeof(HapConfigurationOption*));
+                (*config).globals = realloc((*config).globals, (*config).totalGlobals * sizeof(HAPConfigurationOption*));
                 (*config).globals[(*config).totalGlobals - 1] = option;
 
             } else {
                 ++(*section).totalOptions;
 
-                (*section).options = realloc((*section).options, (*section).totalOptions * sizeof(HapConfigurationOption*));
+                (*section).options = realloc((*section).options, (*section).totalOptions * sizeof(HAPConfigurationOption*));
                 (*section).options[(*section).totalOptions - 1] = option;
             }
 
@@ -283,6 +283,6 @@ HapConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier) {
 }
 
 
-void hap_configuration_destroy(HapConfiguration *config) {
+void hap_configuration_destroy(HAPConfiguration *config) {
     free(config);
 }
