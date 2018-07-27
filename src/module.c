@@ -129,7 +129,7 @@ void* hap_module_execute(HAPEngine *engine, const short numModules, char *identi
     }
 
     for (index = 0; index < numModules; ++index) {
-        printf("Loading module: %s\n", identifiers[index]);
+        (*engine).log_debug(engine, "Loading module: %s\n", identifiers[index]);
         hap_module_load(engine, modules[index]);
     }
 
