@@ -87,7 +87,8 @@ HAPModule* _hap_module_update_loop(HAPEngine *engine, short numModules, HAPModul
 #ifdef OS_Window}
             Sleep(sleepTime);
 #else
-            usleep(sleepTime);
+            // Unix usleep takes microseconds, so convert to milliseconds.
+            usleep(sleepTime * 1000);
 #endif
 
             hap_timer_update((*engine).time);
