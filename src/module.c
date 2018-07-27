@@ -86,6 +86,7 @@ HAPModule* _hap_module_update_loop(HAPEngine *engine, short numModules, HAPModul
 #else
             // Unix usleep takes microseconds, so convert to milliseconds.
             // TODO: Use nanosleep for newer C versions
+            //     #elif _POSIX_C_SOURCE >= 199309L
             usleep(sleepTime * 1000);
 #endif
 
