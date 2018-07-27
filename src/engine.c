@@ -28,7 +28,7 @@ HAPEngine* hap_engine_create(char *name, char *configuration) {
     (*engine).log_error = hap_log_error;
     (*engine).log_fatal_error = hap_log_fatal_error;
 
-    (*engine).log_info(engine, "Initializing\n");
+    (*engine).log_info(engine, "Initializing");
 
     (*engine).configuration = hap_configuration_load(engine, configuration);
 
@@ -43,6 +43,6 @@ HAPEngine* hap_engine_create(char *name, char *configuration) {
 
 void hap_engine_destroy(HAPEngine *engine) {
     hap_timer_destroy((*engine).time);
-    (*engine).log_notice(engine, "Destroyed engine.\n");
+    (*engine).log_notice(engine, "Destroyed engine.");
     free(engine);
 }

@@ -36,14 +36,9 @@ FILE* hap_configuration_file(HAPEngine *engine, char *fileName) {
 }
 
 
-HAPConfigurationToken* hap_configuration_token_next(FILE *file) {
+int hap_configuration_token_next(FILE *file, HAPConfigurationToken *token) {
     char cursor;
     short valueIndex, allocatedValueSize;
-
-    HAPConfigurationToken *token;
-
-    token = calloc(1, sizeof(HAPConfigurationToken));
-    if (token == NULL) return NULL;
 
     valueIndex = 0;
     allocatedValueSize = HAP_CONFIG_TOKEN_VALUE_BUFFER_SIZE;
@@ -52,10 +47,10 @@ HAPConfigurationToken* hap_configuration_token_next(FILE *file) {
     (*token).value = calloc(allocatedValueSize, sizeof(char));
 
     if ((*token).value == NULL) {
-        free(token);
-        return NULL;
+        return 1;
     }
 
+    int x = -1;
     for (flockfile(file); !feof(file);) {
         cursor = getc(file);
 
@@ -88,15 +83,12 @@ HAPConfigurationToken* hap_configuration_token_next(FILE *file) {
         }
 
         if (valueIndex == allocatedValueSize-1) {
-            allocatedValueSize = (HAP_CONFIG_TOKEN_VALUE_BUFFER_SIZE % valueIndex) * HAP_CONFIG_TOKEN_VALUE_BUFFER_SIZE * sizeof(char);
+            // Grow option buffer by ALLOCATED_TOKEN_VALUE_BUFFER_SIZE
+            allocatedValueSize = (valueIndex % HAP_CONFIG_TOKEN_VALUE_BUFFER_SIZE ) * HAP_CONFIG_TOKEN_VALUE_BUFFER_SIZE * sizeof(char);
             (*token).value = realloc((*token).value, allocatedValueSize);
-
-            if ((*token).value == NULL) {
-                free(token);
-                funlockfile(file);
-                return NULL;
-            }
+            if ((*token).value == NULL) return 1;
         }
+
 
         if (valueIndex == 0 && CHARACTER_IS_WHITESPACE(cursor))
             continue;
@@ -105,10 +97,7 @@ HAPConfigurationToken* hap_configuration_token_next(FILE *file) {
         ++valueIndex;
     }
 
-    funlockfile(file);
-    fclose(file);
-
-    return token;
+    return 0;
 }
 
 char *hap_configuration_filename(HAPEngine *engine, char *identifier) {
@@ -201,7 +190,7 @@ HapConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier) {
 
     HapConfiguration *config;
 
-    HAPConfigurationToken *token;
+    HAPConfigurationToken token;
     HapConfigurationOption *option;
     HapConfigurationSection *section;
 
@@ -224,15 +213,17 @@ HapConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier) {
 
     if (file == NULL) return NULL;
 
+    int error = 0;
+
     for (;;) {
-        token = hap_configuration_token_next(file);
+        error = hap_configuration_token_next(file, &token);
 
         (*engine).log_debug(
             engine, "config\t%s\t%d\t%s",
-            fileName, (*token).type, (*token).value
+            fileName, (token).type, token.value
         );
 
-        if (token == NULL) {
+        if (error != 0) {
             (*engine).log_error(
                 engine,
                 "Failed to load token in: %s",
@@ -247,27 +238,24 @@ HapConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier) {
             return NULL;
         }
 
-        if ((*token).type == FINISHED) {
-            free(token);
-            token = NULL;
+        if (token.type == FINISHED) {
             break;
         }
 
-        if ((*token).type == SECTION) {
+        if (token.type == SECTION) {
             ++(*config).totalSections;
 
-            section = hap_configuration_process_section(token);
+            section = hap_configuration_process_section(&token);
 
-            (*config).sections = realloc((*config).sections, sizeof(HapConfigurationSection*) * (*config).totalSections);
+            (*config).sections = realloc((*config).sections, (*config).totalSections * sizeof(HapConfigurationSection*));
             (*config).sections[(*config).totalSections-1] = section;
 
             if ((*config).sections[(*config).totalSections - 1] == NULL) {
-                free(token);
                 hap_configuration_destroy(config);
             }
 
-        } else if ((*token).type == OPTION) {
-            option = hap_configuration_process_option(token);
+        } else if (token.type == OPTION) {
+            option = hap_configuration_process_option(&token);
 
             if (section == NULL) {
                 ++(*config).totalGlobals;
@@ -285,8 +273,6 @@ HapConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier) {
         } else {
             (*engine).log_warning(engine, "Unknown token found in configuration file: %s\n", fileName);
         }
-
-        free(token);
     }
 
     free(fileName);

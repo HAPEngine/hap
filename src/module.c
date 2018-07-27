@@ -112,7 +112,7 @@ void* hap_module_execute(HAPEngine *engine, const short numModules, char *identi
     HAPModule **modules = (HAPModule**) calloc(numModules, sizeof(HAPModule*));
 
     for (index = 0; index < numModules; ++index) {
-        printf("Creating module: %s\n", identifiers[index]);
+        (*engine).log_debug(engine, "Creating module: %s\n", identifiers[index]);
         modules[index] = hap_module_create(engine, identifiers[index]);
 
         // Creating a module failed, so destroy previously created ones
