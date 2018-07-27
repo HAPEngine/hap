@@ -57,33 +57,37 @@ HAPModule* _hap_module_update_loop(HAPEngine *engine, short numModules, HAPModul
     HAPTime actualTime;
     HAPTime actualTimeDelta;
 
-    for (;;) {
-        simulatedTime = (*(*engine).time).currentTime;
-        simulatedTimeDelta = (*(*engine).time).timeDelta;
+    timeState time = (*(*engine).time);
+
+    int x = 0;
+
+    for (; x < 100;) {
+        ++x;
+
+        (*engine).log_notice(engine, "%d\n", x);
+
+        simulatedTime = time.currentTime;
+        simulatedTimeDelta = time.timeDelta;
 
         hap_timer_update((*engine).time);
 
-        actualTime = (*(*engine).time).currentTime;
-        actualTimeDelta = (*(*engine).time).timeDelta;
+        actualTime = time.currentTime;
+        actualTimeDelta = time.timeDelta;
 
         if (actualTimeDelta < MIN_SIMULATION_FRAME_TIME) {
-#ifdef OS_Windows
-#else
-            usleep((MIN_SIMULATION_FRAME_TIME - actualTimeDelta) * 1000);
-#endif
+            hap_timer_update(&time);
 
-            hap_timer_update((*engine).time);
-
-            actualTime = (*(*engine).time).currentTime;
-            actualTimeDelta = (*(*engine).time).timeDelta;
+            actualTime = time.currentTime;
+            actualTimeDelta = time.timeDelta;
+            continue;
         }
 
         while (simulatedTime < actualTime) {
             if (simulatedTimeDelta > MAX_SIMULATION_FRAME_TIME)
                 simulatedTimeDelta = MAX_SIMULATION_FRAME_TIME;
 
-            (*(*engine).time).currentTime = simulatedTime;
-            (*(*engine).time).timeDelta = simulatedTimeDelta;
+            time.currentTime = simulatedTime;
+            time.timeDelta = simulatedTimeDelta;
 
             for (index = 0; index < numModules; ++index) {
                 if ((*modules[index]).nextUpdate > simulatedTime) continue;
@@ -95,7 +99,7 @@ HAPModule* _hap_module_update_loop(HAPEngine *engine, short numModules, HAPModul
                 (*modules[index]).nextUpdate += simulatedTime;
             }
 
-            (*(*engine).time).currentTime = actualTime;
+            time.currentTime = actualTime;
 
             simulatedTime += simulatedTimeDelta;
             simulatedTimeDelta = actualTime - simulatedTime;
