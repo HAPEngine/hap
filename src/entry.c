@@ -31,7 +31,7 @@ int hap_standard_entry(char *name, int argc, char **argv) {
 
     for (index = 0; index < (*(*engine).configuration).totalSections; ++index) {
         currentModule = (*(*(*engine).configuration).sections[index]).name;
-        (*engine).log_info(engine, "Loading module: %s", currentModule);
+        (*engine).log_info(engine, "Using module: %s", currentModule);
         identifiers[index] = currentModule;
     }
 
