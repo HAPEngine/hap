@@ -100,6 +100,11 @@ HAPModule* _hap_module_update_loop(HAPEngine *engine, short numModules, HAPModul
             simulatedTime += simulatedTimeDelta;
             simulatedTimeDelta = actualTime - simulatedTime;
         }
+
+        // After simulation is complete, render the final scene
+        for (index = 0; index < numModules; ++index) {
+            hap_module_render(engine, modules[index]);
+        }
     }
 
     return NULL;
@@ -175,7 +180,8 @@ HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
 #ifdef OS_Windows
     (*module).create = (void* (*)(HAPEngine* engine)) GetProcAddress((*module).ref, "create");
     (*module).load = (void(*)(HAPEngine* engine, void *state, char *identifier)) GetProcAddress((*module).ref, "load");
-    (*module).update = (HAPTime(*)(HAPEngine* engine, void *state)) GetProcAddress((*module).ref, "update");
+    (*module).update = (haptime(*)(hapengine* engine, void *state)) getprocaddress((*module).ref, "update");
+    (*module).render = (void(*)(hapengine* engine, void *state)) getprocaddress((*module).ref, "render");
     (*module).unload = (void(*)(HAPEngine* engine, void *state)) GetProcAddress((*module).ref, "unload");
     (*module).destroy = (void(*)(HAPEngine* engine, void *state)) GetProcAddress((*module).ref, "destroy");
 #else
@@ -184,16 +190,17 @@ HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
     (*module).create = (void* (*)(HAPEngine* engine)) dlsym((*module).ref, "create");
     (*module).load = (void (*)(HAPEngine* engine, void *state, char *identifier)) dlsym((*module).ref, "load");
     (*module).update = (HAPTime (*)(HAPEngine* engine, void *state)) dlsym((*module).ref, "update");
+    (*module).render = (void (*)(HAPEngine* engine, void *state)) dlsym((*module).ref, "render");
     (*module).unload = (void (*)(HAPEngine* engine, void *state)) dlsym((*module).ref, "unload");
     (*module).destroy = (void (*)(HAPEngine* engine, void *state)) dlsym((*module).ref, "destroy");
 #pragma GCC diagnostic pop
 #endif
 
-    if ((*module).create == NULL) (*engine).log_error(engine, "Warning: Module '%s' does not export 'create'.\n", (*module).identifier);
-    if ((*module).load == NULL) (*engine).log_error(engine, "Warning: Module '%s' does not export 'load'.\n", (*module).identifier);
-    if ((*module).update == NULL) (*engine).log_error(engine, "Warning: Module '%s' does not export 'update'\n", (*module).identifier);
-    if ((*module).unload == NULL) (*engine).log_error(engine, "Warning: Module '%s' does not export 'unload'\n", (*module).identifier);
-    if ((*module).destroy == NULL) (*engine).log_error(engine, "Warning: Module '%s' does not export 'destroy'\n", (*module).identifier);
+    if ((*module).create == NULL) (*engine).log_notice(engine, "Module '%s' does not export 'create'.\n", (*module).identifier);
+    if ((*module).load == NULL) (*engine).log_notice(engine, "Module '%s' does not export 'load'.\n", (*module).identifier);
+    if ((*module).update == NULL) (*engine).log_notice(engine, "Module '%s' does not export 'update'\n", (*module).identifier);
+    if ((*module).unload == NULL) (*engine).log_notice(engine, "Module '%s' does not export 'unload'\n", (*module).identifier);
+    if ((*module).destroy == NULL) (*engine).log_notice(engine, "Module '%s' does not export 'destroy'\n", (*module).identifier);
 
     if ((*module).create != NULL)
         (*module).state = (*module).create(engine);
@@ -203,19 +210,16 @@ HAPModule* hap_module_create(HAPEngine *engine, char *identifier) {
 
 void hap_module_load(HAPEngine *engine, HAPModule *module) {
     if ((*module).load == NULL) return;
-
     (*module).load(engine, (*module).state, (*module).identifier);
 }
 
 HAPTime hap_module_update(HAPEngine *engine, HAPModule *module) {
     if ((*module).update == NULL) return 0;
-
     return (*module).update(engine, (*module).state);
 }
 
 void hap_module_unload(HAPEngine *engine, HAPModule *module) {
     if ((*module).unload == NULL) return;
-
     (*module).unload(engine, (*module).state);
 }
 
@@ -227,6 +231,10 @@ void _module_close_ref(void* ref) {
 #endif
 }
 
+void hap_module_render(HAPEngine *engine, HAPModule *module) {
+    if ((*module).render == NULL) return 0;
+    return (*module).render(engine, (*module).state);
+}
 
 void hap_module_destroy(HAPEngine *engine, HAPModule *module) {
     if ((*module).destroy != NULL)
