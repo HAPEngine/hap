@@ -60,10 +60,7 @@ HAPModule* _hap_module_update_loop(HAPEngine *engine, short numModules, HAPModul
     HAPTime sleepTime;
     HAPTime nextUpdateDelta;
 
-    int x = 0;
-    for (; x < 100;) {
-        ++x;
-
+    for (;;) {
         // Set simulated timings to the values that they were during the last
         // time that the timer was updated.
         simulatedTime = (*(*engine).time).currentTime;
@@ -170,7 +167,7 @@ void* hap_module_execute(HAPEngine *engine, const short numModules, char *identi
     }
 
 
-    printf("All modules loaded.\n");
+    (*engine).log_notice(engine, "All modules loaded.\n");
 
     time = (*engine).time;
 
