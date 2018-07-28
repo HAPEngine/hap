@@ -74,19 +74,19 @@ HAPSymbol* symbol_find(char * const name, bool insert) {
    return result;
 }
 
-const HAPSymbol* symbol_get(char * const name) {
-   // Get a reference to a symbol with the given name
-
-   return symbol_find(name, true);
-}
-
 void symbol_free(HAPSymbol *symbol) {
    // Free memory used by a symbol
 
    if ((*symbol).name == NULL) free((*symbol).name);
 }
 
-unsigned int symbol_release(char * const name) {
+const HAPSymbol* hap_symbol_get(char * const name) {
+   // Get a reference to a symbol with the given name
+
+   return symbol_find(name, true);
+}
+
+unsigned int hap_symbol_release(char * const name) {
    // Releases a symbol by name from one of it's references. If the symbol has no
    // more references, it is removed from the buckets and freed from memory.
    // The number of remaining references to this symbol is returned. It is
