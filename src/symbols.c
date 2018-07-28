@@ -110,7 +110,7 @@ unsigned int symbol_release(char * const name) {
       // This should never happen, but 
       if (node == NULL) {
          fprintf(stderr, "A corrupt node was encountered while releasing symbol: %s\n", name);
-         return -1;
+         return 0;
       }
 
       while (&(*node).symbol != symbol) {
