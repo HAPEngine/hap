@@ -9,7 +9,12 @@
 
 
 typedef double Unit;
+
+#ifndef HAP_TIME_DATA_TYPE
 typedef float HAPTime;
+#else
+typedef HAP_TIME_DATA_TYPE HAPTime;
+#endif
 
 typedef struct HAPEngine HAPEngine;
 typedef struct timeState timeState;
