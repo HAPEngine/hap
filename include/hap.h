@@ -17,6 +17,7 @@ typedef HAP_TIME_DATA_TYPE HAPTime;
 #endif
 
 typedef struct HAPEngine HAPEngine;
+typedef struct HAPSymbol HAPSymbol;
 typedef struct timeState timeState;
 
 typedef struct HAPConfiguration HAPConfiguration;
@@ -95,6 +96,11 @@ struct HAPConfiguration {
     HAPConfigurationOption **globals;
 };
 
+struct HAPSymbol {
+    char *name;
+    unsigned int count;
+};
+
 // Standard entry function. Most apps need no more than this.
 int hap_standard_entry(char *name, int argc, char **argv);
 
@@ -104,5 +110,8 @@ void* hap_module_execute(HAPEngine *engine);
 
 HAPConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier);
 void hap_configuration_destroy(HAPConfiguration *config);
+
+const HAPSymbol* symbol_get(char * const name);
+unsigned int symbol_release(char * const name);
 
 #endif
