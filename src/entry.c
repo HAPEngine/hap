@@ -10,9 +10,7 @@
 
 
 int hap_standard_entry(char *name, int argc, char **argv) {
-    char *currentModule;
     char *configurationIdentifier;
-    int index;
 
     if (argc > 1) configurationIdentifier = argv[1];
     else configurationIdentifier = name;

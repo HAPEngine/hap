@@ -50,7 +50,6 @@ int hap_configuration_token_next(FILE *file, HAPConfigurationToken *token) {
         return 1;
     }
 
-    int x = -1;
     for (flockfile(file); !feof(file);) {
         cursor = getc(file);
 

@@ -7,9 +7,14 @@ ADD_DEFINITIONS(
   -D CPU_${CMAKE_HOST_SYSTEM_PROCESSOR}
 )
 
+# Set up build types
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_DEBUG}")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O3 -g")
+
 
 # Use C11
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic")
+SET(CMAKE_C_STANDARD 11)
 
 
 # Setup build output directories

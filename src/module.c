@@ -3,6 +3,7 @@
 #ifndef OS_Windows
 #include <dlfcn.h>
 #include <unistd.h>
+#include <time.h>
 #endif
 
 #include <math.h>
@@ -60,6 +61,11 @@ HAPModule* _hap_module_update_loop(HAPEngine *engine, short numModules, HAPModul
     HAPTime sleepTime;
     HAPTime nextUpdateDelta;
 
+#if !defined(OS_Windows) && _POSIX_C_SOURCE >= 199309L
+    struct timespec sleepTimeSpec;
+    struct timespec sleepTimeRemaining;
+#endif
+
     for (;;) {
         // Set simulated timings to the values that they were during the last
         // time that the timer was updated.
@@ -81,12 +87,27 @@ HAPModule* _hap_module_update_loop(HAPEngine *engine, short numModules, HAPModul
 
         // Ensure that we don't simulate more often than we are told to
         if (actualTimeDelta < MIN_SIMULATION_FRAME_TIME) {
-#ifdef OS_Window
+#ifdef OS_Windows
             Sleep(sleepTime);
-#else
+
+#elif _POSIX_C_SOURCE >= 199309L
+            // Set up the number of seconds and the number of nanoseconds to
+            // sleep for.
+            sleepTimeSpec.tv_sec = (int) sleepTime / 1000.f;
+            sleepTimeSpec.tv_nsec = fmod(sleepTime, 1000.f) * 1000000;
+
             // Unix usleep takes microseconds, so convert to milliseconds.
             // TODO: Use nanosleep for newer C versions
-            //     #elif _POSIX_C_SOURCE >= 199309L
+            while (nanosleep(&sleepTimeSpec, &sleepTimeRemaining) == -1) {
+                // This is a nice-but-special case where we were interrupted by
+                // a signal handler, which other sleep methods don't provide
+                // us. Here, we want to handle any signals and the continue to
+                // sleep.
+                sleepTimeSpec.tv_sec = sleepTimeRemaining.tv_sec;
+                sleepTimeSpec.tv_nsec = sleepTimeRemaining.tv_nsec;
+            }
+
+#else
             usleep(sleepTime * 1000);
 #endif
 
