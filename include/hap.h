@@ -7,6 +7,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined _WIN32 || defined __CYGWIN__
+#define HAP_MODULE_EXPORT __declspec(dllexport)
+#else
+#if __GNUC__ >= 4
+#define HAP_MODULE_EXPORT __attribute__ ((visibility ("default")))
+#else
+#define HAP_MODULE_EXPORT
+#endif
+#endif
 
 typedef double Unit;
 
@@ -55,22 +64,25 @@ struct timeState {
 
 
 struct HAPEngine {
-    char *name;
+	void(*log)(HAPEngine *engine, FILE* dest, char *message, va_list arguments);
+	bool(*log_debug)(HAPEngine *engine, char *message, ...);
+	bool(*log_info)(HAPEngine *engine, char *message, ...);
+	bool(*log_notice)(HAPEngine *engine, char *message, ...);
+	bool(*log_warning)(HAPEngine *engine, char *message, ...);
+	bool(*log_error)(HAPEngine *engine, char *message, ...);
+	void(*log_fatal_error)(HAPEngine *engine, int code, char *message, ...);
+	
+	char *name;
 
     int  *argc;
     char **argvp;
 
     timeState *time;
-    HAPLogLevel logLevel;
     HAPConfiguration *configuration;
 
-    void (*log)(HAPEngine *engine, FILE* dest, char *message, va_list arguments);
-    bool (*log_debug)(HAPEngine *engine, char *message, ...);
-    bool (*log_info)(HAPEngine *engine, char *message, ...);
-    bool (*log_notice)(HAPEngine *engine, char *message, ...);
-    bool (*log_warning)(HAPEngine *engine, char *message, ...);
-    bool (*log_error)(HAPEngine *engine, char *message, ...);
-    void (*log_fatal_error)(HAPEngine *engine, int code, char *message, ...);
+	HAPLogLevel logLevel;
+
+	bool isRunning;
 };
 
 
@@ -81,19 +93,17 @@ struct HAPConfigurationOption {
 
 
 struct HAPConfigurationSection {
-    char *name;
-
+	HAPConfigurationOption **options;
     short totalOptions;
-    HAPConfigurationOption **options;
+    char *name;
 };
 
 
 struct HAPConfiguration {
-    short totalSections;
     HAPConfigurationSection **sections;
-
-    short totalGlobals;
     HAPConfigurationOption **globals;
+	short totalSections;
+	short totalGlobals;
 };
 
 struct HAPSymbol {
