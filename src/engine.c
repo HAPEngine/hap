@@ -16,7 +16,7 @@ HAPEngine* hap_engine_create(char *name, char *configuration) {
 
     if (engine == NULL) return NULL;
 
-    (*engine).name = name;
+	(*engine).name = name;
     (*engine).time = hap_timer_update((*engine).time);
     (*engine).logLevel = LOGLEVEL_INFO;
 
@@ -31,6 +31,8 @@ HAPEngine* hap_engine_create(char *name, char *configuration) {
     (*engine).log_info(engine, "Initializing");
 
     (*engine).configuration = hap_configuration_load(engine, configuration);
+
+	(*engine).isRunning = true;
 
     if ((*engine).configuration == NULL) {
         free(engine);
