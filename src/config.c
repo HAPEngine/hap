@@ -50,7 +50,7 @@ int hap_configuration_token_next(FILE *file, HAPConfigurationToken *token) {
         return 1;
     }
 
-    for (flockfile(file); !feof(file);) {
+    while (!feof(file)) {
         cursor = getc(file);
 
         if (cursor == -1) {
@@ -275,7 +275,6 @@ HAPConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier) {
     }
 
     free(fileName);
-    funlockfile(file);
     fclose(file);
 
     return config;
