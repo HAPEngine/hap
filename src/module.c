@@ -1,6 +1,8 @@
 #include <hap.h>
 
-#ifndef OS_Windows
+#ifdef OS_Windows
+#include <Windows.h>
+#else
 #include <dlfcn.h>
 #include <unistd.h>
 #include <time.h>
@@ -66,7 +68,7 @@ HAPModule* _hap_module_update_loop(HAPEngine *engine, short numModules, HAPModul
     struct timespec sleepTimeRemaining;
 #endif
 
-    for (;;) {
+    while ((*engine).isRunning == true) {
         // Set simulated timings to the values that they were during the last
         // time that the timer was updated.
         simulatedTime = (*(*engine).time).currentTime;
@@ -252,8 +254,8 @@ HAPModule* hap_module_create(char *identifier, HAPEngine *engine, HAPConfigurati
 #ifdef OS_Windows
     (*module).create = (void* (*)(HAPEngine* engine, HAPConfigurationSection *configuration)) GetProcAddress((*module).ref, "create");
     (*module).load = (void(*)(HAPEngine* engine, void *state, char *identifier)) GetProcAddress((*module).ref, "load");
-    (*module).update = (haptime(*)(hapengine* engine, void *state)) getprocaddress((*module).ref, "update");
-    (*module).render = (void(*)(hapengine* engine, void *state)) getprocaddress((*module).ref, "render");
+    (*module).update = (HAPTime(*)(HAPEngine* engine, void *state)) GetProcAddress((*module).ref, "update");
+    (*module).render = (void(*)(HAPEngine* engine, void *state)) GetProcAddress((*module).ref, "render");
     (*module).unload = (void(*)(HAPEngine* engine, void *state)) GetProcAddress((*module).ref, "unload");
     (*module).destroy = (void(*)(HAPEngine* engine, void *state)) GetProcAddress((*module).ref, "destroy");
 #else
