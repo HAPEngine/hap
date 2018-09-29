@@ -4,6 +4,7 @@
 #endif
 
 #ifdef OS_Windows
+#include <Windows.h>
 #include <sys/timeb.h>
 #else
 #include <time.h>
