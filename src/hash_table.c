@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
@@ -40,7 +41,7 @@ struct HAPHashTable {
 };
 
 
-const void * const hap_hash_table_create(unsigned long size, bool fixed) {
+void* hap_hash_table_create(unsigned long size, bool fixed) {
     HAPHashTable *table = calloc(1, sizeof(HAPHashTable*));
     if (table == NULL) return NULL;
 
@@ -75,7 +76,7 @@ void hap_hash_table_destroy(void *table) {
 
 unsigned long get_partition_index(HAPHashTable *table, void *key) {
     // TODO: Account for modulo bias... Maybe?
-    return hash_ptr(key) % ((*table).size - 1);
+    return fmod(hash_ptr(key), (*table).size);
 }
 
 
@@ -119,7 +120,13 @@ void* hap_hash_table_remove(void *table, void *key) {
     preceding = hap_hash_table_node_find(table, key, true);
     if (preceding == NULL) return NULL;
 
-    match = (*preceding).next;
+    if ((*preceding).key == key) {
+        match = preceding;
+        preceding = NULL;
+    } else {
+        match = (*preceding).next;
+    }
+
     if (match == NULL) return NULL;
 
     if (preceding == NULL) {
@@ -130,8 +137,7 @@ void* hap_hash_table_remove(void *table, void *key) {
     }
 
     result = (*match).value;
-    free(match);
-
+    if (match != NULL) free(match);
     return result;
 }
 
@@ -156,7 +162,7 @@ void* hap_hash_table_insert(void *table, void *key, void *value) {
     if (previous && (*previous).key == key) {
         match = previous;
         result = (*previous).value;
-    } else if ((*previous).next && (*previous).next) {
+    } else if (previous && (*previous).next) {
         match = (*previous).next;
         result = (*match).value;
     } else {
