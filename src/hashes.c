@@ -12,7 +12,7 @@ unsigned long hash_str(const char *subject) {
 }
 
 
-unsigned long hash_ptr(void *subject) {
+unsigned long hash_ptr(const void *subject) {
     // A temporary / lazy / simple way to hash a pointer. This will be improved
     // later, but I just need something to test with for now.
 

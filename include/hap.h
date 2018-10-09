@@ -27,6 +27,7 @@ typedef HAP_TIME_DATA_TYPE HAPTime;
 
 typedef struct HAPEngine HAPEngine;
 typedef struct HAPSymbol HAPSymbol;
+typedef struct HAPTag    HAPTag;
 
 typedef struct timeState timeState;
 
@@ -114,6 +115,14 @@ struct HAPSymbol {
 };
 
 
+struct HAPTag {
+    char *name;
+
+    unsigned int numValues;
+    void **values;
+};
+
+
 // Standard entry function. Most apps need no more than this.
 int hap_standard_entry(char *name, int argc, char **argv);
 
@@ -124,7 +133,16 @@ void* hap_module_execute(HAPEngine *engine);
 HAPConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier);
 void hap_configuration_destroy(HAPConfiguration *config);
 
+// Functions for referencing symbols, which are unique pointers which are
+// guaranteed to be the same instance for every call with a matching name.
 const HAPSymbol* hap_symbol_get(char * const name);
 unsigned int hap_symbol_release(char * const name);
+
+// Functions for working with tags, which provide a way of mapping unordered
+// lists of void pointers to a given tag name.
+const HAPTag* hap_tag_get(char * const name);
+
+bool hap_tag_add(char * const name, void *value);
+bool hap_tag_remove(char * const name, void *value);
 
 #endif

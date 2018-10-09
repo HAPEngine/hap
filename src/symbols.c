@@ -14,7 +14,7 @@ typedef struct HAPSymbolNode HAPSymbolNode;
 
 
 struct HAPSymbolNode {
-   HAPSymbol      symbol;
+   HAPSymbol       symbol;
    HAPSymbolNode  *next;
 };
 
@@ -56,13 +56,13 @@ HAPSymbol* symbol_find(char * const name, bool insert) {
    } else {
       node = symbols[index];
 
-      while (strcmp((*node).symbol.name, name) != 0) {
+      while (node != NULL && strcmp((*node).symbol.name, name) != 0) {
          prev = node;
          node = (*node).next;
       }
 
       if (node == NULL && insert == true)
-         prev->next = node = symbol_node_create(name);
+         (*prev).next = node = symbol_node_create(name);
    }
 
    // Failed to get or create a node, so we return a failure state :'(
@@ -74,7 +74,7 @@ HAPSymbol* symbol_find(char * const name, bool insert) {
    return result;
 }
 
-void symbol_free(HAPSymbol *symbol) {
+void symbol_detroy(HAPSymbol *symbol) {
    // Free memory used by a symbol
 
    if ((*symbol).name == NULL) free((*symbol).name);
@@ -113,7 +113,7 @@ unsigned int hap_symbol_release(char * const name) {
          return 0;
       }
 
-      while (&(*node).symbol != symbol) {
+      while (node != NULL && &(*node).symbol != symbol) {
          prev = node;
          node = (*node).next;
       }
@@ -121,7 +121,7 @@ unsigned int hap_symbol_release(char * const name) {
       if (prev != NULL && node != NULL)
          (*prev).next = (*node).next;
 
-      symbol_free(symbol);
+      symbol_detroy(symbol);
       free(node);
 
       return 0;
