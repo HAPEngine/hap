@@ -7,6 +7,7 @@
 #include "hashes.h"
 
 
+#define MAX_ERROR_LENGTH 255
 #define TAGS_BUCKET_SIZE 4096
 
 
@@ -31,17 +32,28 @@ void tag_destroy(HAPTag *tag) {
 
 
 HAPTagNode* tag_node_create(char * name) {
+  errno_t error = 0;
+  char errorMessage[MAX_ERROR_LENGTH] = "\0";
+
+   int length = strlen(name);
+
    HAPTagNode *node = calloc(1, sizeof(HAPTagNode));
    if (node == NULL) return NULL;
 
-   (*node).tag.name = calloc(strlen(name), sizeof(char));
+   (*node).tag.name = calloc(length, sizeof(char));
 
    if ((*node).tag.name == NULL) {
       free(node);
       return NULL;
    }
 
-   strcpy((*node).tag.name, name);
+   if ((error = strcpy_s((*node).tag.name, length, name)) == 0) {
+	   if ((error = strerror_s(errorMessage, MAX_ERROR_LENGTH, error)) != 0) {
+		   fprintf(stderr, "Failed to create tag node: %s\n", name);
+	   }
+
+	   fprintf(stderr, "Failed to create tag node: %s\n", errorMessage);
+   }
 
    return node;
 }
