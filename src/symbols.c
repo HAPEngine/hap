@@ -25,18 +25,19 @@ HAPSymbolNode *symbols[SYMBOLS_BUCKET_SIZE];
 HAPSymbolNode* symbol_node_create(char * const name) {
    // Create a node with the given name
 
+   int length = strlen(name);
+
    HAPSymbolNode *node = calloc(1, sizeof(HAPSymbolNode));
    if (node == NULL) return NULL;
 
-   (*node).symbol.name = calloc(strlen(name), sizeof(char));
+   (*node).symbol.name = calloc(length, sizeof(char));
 
    if ((*node).symbol.name == NULL) {
       free(node);
       return NULL;
    }
 
-   strcpy((*node).symbol.name, name);
-
+   strcpy_s((*node).symbol.name, length, name);
    return node;
 }
 

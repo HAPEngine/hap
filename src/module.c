@@ -90,7 +90,7 @@ HAPModule* _hap_module_update_loop(HAPEngine *engine, short numModules, HAPModul
         // Ensure that we don't simulate more often than we are told to
         if (actualTimeDelta < MIN_SIMULATION_FRAME_TIME) {
 #ifdef OS_Windows
-            Sleep(sleepTime);
+            Sleep((DWORD) sleepTime);
 
 #elif _POSIX_C_SOURCE >= 199309L
             // Set up the number of seconds and the number of nanoseconds to
@@ -175,10 +175,17 @@ void* hap_module_execute(HAPEngine *engine) {
     if (identifiers == NULL) return NULL;
 
     if (configurationSections == NULL) {
-        (*engine).log_error(engine, "Could not initialize module configuration information.");
+        (*engine).log_error(engine, "Could not initialize module configuration information");
         free(identifiers);
         return NULL;
     }
+
+	if (modules == NULL) {
+		(*engine).log_error(engine, "Could not initialize array for module loading");
+		free(configurationSections);
+		free(identifiers);
+		return NULL;
+	}
 
     for (index = 0; index < numModules; ++index) {
         configurationSections[index] = &(*(*(*engine).configuration).sections[index]);
@@ -187,7 +194,7 @@ void* hap_module_execute(HAPEngine *engine) {
     }
 
     for (index = 0; index < numModules; ++index) {
-        (*engine).log_debug(engine, "Creating module: %s\n", identifiers[index]);
+        (*engine).log_debug(engine, "Creating module: %s", identifiers[index]);
         modules[index] = hap_module_create(identifiers[index], engine, configurationSections[index]);
 
         // Creating a module failed, so destroy previously created ones
@@ -204,7 +211,7 @@ void* hap_module_execute(HAPEngine *engine) {
     }
 
     for (index = 0; index < numModules; ++index) {
-        (*engine).log_debug(engine, "Loading module: %s\n", identifiers[index]);
+        (*engine).log_debug(engine, "Loading module: %s", identifiers[index]);
         hap_module_load(engine, modules[index]);
 
         // These arent' used at this point, so we can clean them up.
@@ -215,7 +222,7 @@ void* hap_module_execute(HAPEngine *engine) {
     free(configurationSections);
     free(identifiers);
 
-    (*engine).log_notice(engine, "All modules loaded.\n");
+    (*engine).log_notice(engine, "All modules loaded.");
 
     _hap_module_update_loop(engine, numModules, modules);
 
@@ -270,11 +277,11 @@ HAPModule* hap_module_create(char *identifier, HAPEngine *engine, HAPConfigurati
 #pragma GCC diagnostic pop
 #endif
 
-    if ((*module).create == NULL) (*engine).log_notice(engine, "Module '%s' does not export 'create'.\n", (*module).identifier);
-    if ((*module).load == NULL) (*engine).log_notice(engine, "Module '%s' does not export 'load'.\n", (*module).identifier);
-    if ((*module).update == NULL) (*engine).log_notice(engine, "Module '%s' does not export 'update'\n", (*module).identifier);
-    if ((*module).unload == NULL) (*engine).log_notice(engine, "Module '%s' does not export 'unload'\n", (*module).identifier);
-    if ((*module).destroy == NULL) (*engine).log_notice(engine, "Module '%s' does not export 'destroy'\n", (*module).identifier);
+    if ((*module).create == NULL) (*engine).log_notice(engine, "Module '%s' does not export 'create'", (*module).identifier);
+    if ((*module).load == NULL) (*engine).log_notice(engine, "Module '%s' does not export 'load'", (*module).identifier);
+    if ((*module).update == NULL) (*engine).log_notice(engine, "Module '%s' does not export 'update'", (*module).identifier);
+    if ((*module).unload == NULL) (*engine).log_notice(engine, "Module '%s' does not export 'unload'", (*module).identifier);
+    if ((*module).destroy == NULL) (*engine).log_notice(engine, "Module '%s' does not export 'destroy'", (*module).identifier);
 
     if ((*module).create != NULL)
         (*module).state = (*module).create(engine, configuration);

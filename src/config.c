@@ -1,6 +1,7 @@
 #include <hap.h>
 #include <stdio.h>
 
+#define MAX_ERROR_LENGTH 255
 #define DEFAULT_CONFIG_EXTENSION ".ini"
 #define HAP_CONFIG_TOKEN_VALUE_BUFFER_SIZE 16
 #define CHARACTER_IS_WHITESPACE(cursor) (cursor == ' ' || cursor == '\n' || cursor == '\r' || cursor == '\t' || cursor == '\0')
@@ -24,15 +25,21 @@ struct HAPConfigurationToken {
 
 
 FILE* hap_configuration_file(HAPEngine *engine, char *fileName) {
-    FILE *file = fopen(fileName, "r");
+	char errorMessage[MAX_ERROR_LENGTH+1];
 
-    if (file == NULL) {
-        (*engine).log_info(engine, "Failed to load configuration file: %s\n", fileName);
-        free(fileName);
-        return NULL;
-    }
+	FILE* stream = NULL;
+	errno_t error = fopen_s(&stream, fileName, "r");
 
-    return file;
+	if (error != 0) {
+		if ((error = strerror_s(errorMessage, MAX_ERROR_LENGTH, error)) != 0) {
+			(*engine).log_error(engine, "Failed to load configuration file(%s): %s");
+		}
+
+		(*engine).log_error(engine, "Failed to load configuration file(%s): %s", fileName, errorMessage);
+		return NULL;
+	}
+
+	return stream;
 }
 
 
@@ -95,6 +102,7 @@ int hap_configuration_token_next(FILE *file, HAPConfigurationToken *token) {
         (*token).value[valueIndex] = cursor;
         ++valueIndex;
     }
+	(*token).value[valueIndex] = '\0';
 
     return 0;
 }
@@ -123,24 +131,27 @@ char *hap_configuration_filename(HAPEngine *engine, char *identifier) {
 }
 
 HAPConfigurationSection* hap_configuration_process_section(HAPConfigurationToken *token) {
-    HAPConfigurationSection* section;
-    section = calloc(1, sizeof(HAPConfigurationSection));
-    (*section).name = (*token).value;
+	int length = 0;
+
+    HAPConfigurationSection* section = (HAPConfigurationSection*) calloc(1, sizeof(HAPConfigurationSection));
+	if (section == NULL) return NULL;
+
+	(*section).name = (*token).value;
+
     return section;
 }
 
 HAPConfigurationOption* hap_configuration_process_option(HAPConfigurationToken *token) {
     size_t keyLength, valueLength;
-    char *key, *value;
+    char *key, *value, *context;
 
     HAPConfigurationOption *option;
 
     option = calloc(1, sizeof(HAPConfigurationOption));
-
     if (option == NULL) return NULL;
 
-    key = strtok((*token).value, "=");
-    value = strtok(NULL, "=");
+    key = strtok_s((*token).value, "=", &context);
+    value = strtok_s((*token).value, "=", &context);
 
     if (value == NULL) value = "true";
 
@@ -148,7 +159,6 @@ HAPConfigurationOption* hap_configuration_process_option(HAPConfigurationToken *
     valueLength = snprintf(NULL, 0, "%s", value);
 
     (*option).key = calloc(keyLength+1, sizeof(char));
-
     if ((*option).key == NULL) return NULL;
 
     (*option).value = calloc(valueLength+1, sizeof(char));
@@ -184,19 +194,19 @@ HAPConfigurationOption* hap_configuration_process_option(HAPConfigurationToken *
 }
 
 HAPConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier) {
-    FILE *file;
-    char *fileName;
+	int error = 0;
 
-    HAPConfiguration *config;
+    FILE *file = NULL;
+    char *fileName = NULL;
 
-    HAPConfigurationToken token;
-    HAPConfigurationOption *option;
-    HAPConfigurationSection *section;
+    HAPConfiguration *config = NULL;
 
-    section = NULL;
+    HAPConfigurationOption *option = NULL;
+    HAPConfigurationSection *section = NULL;
+
+	HAPConfigurationToken token;
 
     config = calloc(1, sizeof(HAPConfiguration));
-
     if (config == NULL) return NULL;
 
     (*config).totalGlobals = 0;
@@ -209,10 +219,7 @@ HAPConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier) {
     if (fileName == NULL) return NULL;
 
     file = hap_configuration_file(engine, fileName);
-
     if (file == NULL) return NULL;
-
-    int error = 0;
 
     for (;;) {
         error = hap_configuration_token_next(file, &token);
@@ -245,8 +252,24 @@ HAPConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier) {
             ++(*config).totalSections;
 
             section = hap_configuration_process_section(&token);
+			(*config).sections = realloc((*config).sections, (*config).totalSections * sizeof(HAPConfigurationSection*));
 
-            (*config).sections = realloc((*config).sections, (*config).totalSections * sizeof(HAPConfigurationSection*));
+			if (section == NULL || (*config).sections == NULL) {
+				// TODO: This is in 3 places, we should probably abstract it?
+				(*engine).log_error(
+					engine,
+					"Failed to load section %d in configuration file %s\n",
+					(*config).totalSections,
+					fileName
+				);
+
+				if (fileName != NULL) free(fileName);
+				fileName = NULL;
+
+				hap_configuration_destroy(config);
+				return NULL;
+			}
+
             (*config).sections[(*config).totalSections-1] = section;
 
             if ((*config).sections[(*config).totalSections - 1] == NULL) {
@@ -259,7 +282,24 @@ HAPConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier) {
             if (section == NULL) {
                 ++(*config).totalGlobals;
 
+				// NOTE: This could potentially leak the original data if it returns NULL. Can we prevent this?
                 (*config).globals = realloc((*config).globals, (*config).totalGlobals * sizeof(HAPConfigurationOption*));
+
+				if ((*config).globals == NULL) {
+					// TODO: This is in 3 places, we can probably abstract it?
+					(*engine).log_error(
+						engine,
+						"Failed to allocate memory for global variable in config file: %s\n",
+						fileName
+					);
+
+					if (fileName != NULL) free(fileName);
+					fileName = NULL;
+
+					hap_configuration_destroy(config);
+					return NULL;
+				}
+
                 (*config).globals[(*config).totalGlobals - 1] = option;
 
             } else {
@@ -270,11 +310,10 @@ HAPConfiguration* hap_configuration_load(HAPEngine *engine, char *identifier) {
             }
 
         } else {
-            (*engine).log_warning(engine, "Unknown token found in configuration file: %s\n", fileName);
+            (*engine).log_warning(engine, "Unknown token found in configuration file: %s", fileName);
         }
     }
 
-    free(fileName);
     fclose(file);
 
     return config;
