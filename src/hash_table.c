@@ -76,7 +76,7 @@ void hap_hash_table_destroy(void *table) {
 
 unsigned long get_partition_index(HAPHashTable *table, void *key) {
     // TODO: Account for modulo bias... Maybe?
-    return fmod(hash_ptr(key), (*table).size);
+    return (unsigned long) fmodl(hash_ptr(key), (*table).size);
 }
 
 
