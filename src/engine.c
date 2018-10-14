@@ -45,6 +45,6 @@ HAPEngine* hap_engine_create(char *name, char *configuration) {
 
 void hap_engine_destroy(HAPEngine *engine) {
     hap_timer_destroy((*engine).time);
-    (*engine).log_notice(engine, "Destroyed engine.");
+    (*engine).log_notice(engine, "Terminating engine");
     free(engine);
 }
