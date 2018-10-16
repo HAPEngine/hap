@@ -15,6 +15,11 @@
 #else
 #define HAP_MODULE_EXPORT
 #endif
+typedef int errno_t;
+#define strtok_s(token, delimiter, _) strtok(token, delimiter)
+#define fopen_s(stream, filename, mode) ((*(stream))=fopen((filename),(mode)))==0
+#define strcpy_s(destination, _, source) (strcpy(destination, source))==0
+#define strerror_s(message, length, error) sprintf(message, "error code %d", error)
 #endif
 
 typedef double Unit;
