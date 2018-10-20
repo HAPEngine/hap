@@ -10,4 +10,4 @@ typedef struct HAPConfigurationSection HAPConfigurationSection;
 typedef union  HAPConfigurationValue   HAPConfigurationValue;
 
 typedef double Unit;
-typedef struct Vector Vector; 
+typedef struct HAPVector HAPVector; 

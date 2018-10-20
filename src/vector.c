@@ -3,12 +3,12 @@
 #include <hap/vector.h>
 
 
-Vector* hap_vector_create(short size) {
-    Vector *v = calloc(1, sizeof(Vector));
+HAPVector* hap_vector_create(short size) {
+    HAPVector *v = calloc(1, sizeof(HAPVector));
     if (v == NULL) return NULL;
 
     (*v).size = size;
-    (*v).domains = calloc((*v).size, sizeof(Vector));
+    (*v).domains = calloc((*v).size, sizeof(HAPVector));
 
     if ((*v).domains == NULL) {
         free(v);
@@ -19,10 +19,10 @@ Vector* hap_vector_create(short size) {
 }
 
 
-Vector* hap_vector_copy(Vector *v1) {
+HAPVector* hap_vector_copy(HAPVector *v1) {
     if (v1 == NULL) return NULL;
 
-    Vector *final = hap_vector_create((*v1).size);
+    HAPVector *final = hap_vector_create((*v1).size);
     if (final == NULL) return NULL;
 
     for (short i = 0; i < (*v1).size; ++i) (*(*final).domains)[i] = (*(*v1).domains)[i];
@@ -30,8 +30,8 @@ Vector* hap_vector_copy(Vector *v1) {
 }
 
 
-Vector* hap_vector_add(Vector *v1, Vector *v2) {
-    Vector* final;
+HAPVector* hap_vector_add(HAPVector *v1, HAPVector *v2) {
+    HAPVector* final;
 
     if (v2 == NULL) return v1;
     if (v1 == NULL) return v2;
@@ -48,9 +48,8 @@ Vector* hap_vector_add(Vector *v1, Vector *v2) {
 }
 
 
-void hap_vector_destroy(Vector *v) {
+void hap_vector_destroy(HAPVector *v) {
     if (v == NULL) return;
     if ((*v).domains != NULL) free((*v).domains);
     free(v);
 }
-
