@@ -10,6 +10,7 @@
 
 #include <hap/compatibility.h>
 #include <hap/typedefs.h>
+#include <hap/vector.h>
 
 
 #ifndef HAP_TIME_DATA_TYPE
