@@ -4,8 +4,9 @@
 #include <Windows.h>
 #else
 #include <dlfcn.h>
-#include <unistd.h>
+#include <string.h>
 #include <time.h>
+#include <unistd.h>
 #endif
 
 #include <math.h>
@@ -43,13 +44,21 @@
 #define MIN_SIMULATION_FRAME_TIME GET_MAX_SIMULATION_FRAME_TIME(64)
 #endif
 
+#ifdef OS_Windows
+#define HAP_MODULE_PATH_FORMAT "lib/%s.dll"
+#else
+#define HAP_MODULE_PATH_FORMAT "lib/libhap_%s.so"
+#endif
+
 typedef struct moduleList moduleList;
+
 
 struct moduleList {
     HAPModule    *module;
 
     moduleList *next;
 };
+
 
 HAPModule* _hap_module_update_loop(HAPEngine *engine, short numModules, HAPModule **modules) {
     short index;
@@ -162,6 +171,7 @@ HAPModule* _hap_module_update_loop(HAPEngine *engine, short numModules, HAPModul
     return NULL;
 }
 
+
 void* hap_module_execute(HAPEngine *engine) {
     short index;
     short numModules = (*(*engine).configuration).totalSections;
@@ -233,12 +243,27 @@ void* hap_module_execute(HAPEngine *engine) {
     return (void*) modules;
 }
 
+
+char* get_module_path(char *identifier) {
+     char *result;
+
+     size_t length = snprintf(NULL, 0, HAP_MODULE_PATH_FORMAT, identifier);
+     if (length < 0) return NULL;
+
+     result = calloc(length+1, sizeof(char));
+     if (result == NULL) return NULL;
+
+     snprintf(result, length+1, HAP_MODULE_PATH_FORMAT, identifier);
+     return result;
+}
+
+
 HAPModule* hap_module_create(char *identifier, HAPEngine *engine, HAPConfigurationSection *configuration) {
     HAPModule *module = (HAPModule*) calloc(1, sizeof(HAPModule));
 
     if (module == NULL) return NULL;
 
-    (*module).identifier = identifier;
+    (*module).identifier = get_module_path(identifier);
     (*module).nextUpdate = 0;
 
 #ifdef OS_Windows
@@ -289,6 +314,7 @@ HAPModule* hap_module_create(char *identifier, HAPEngine *engine, HAPConfigurati
     return module;
 }
 
+
 void hap_module_load(HAPEngine *engine, HAPModule *module) {
     if ((*module).load == NULL) return;
     (*module).load(engine, (*module).state, (*module).identifier);
@@ -312,10 +338,12 @@ void _module_close_ref(void* ref) {
 #endif
 }
 
+
 void hap_module_render(HAPEngine *engine, HAPModule *module) {
     if ((*module).render == NULL) return;
     (*module).render(engine, (*module).state);
 }
+
 
 void hap_module_destroy(HAPEngine *engine, HAPModule *module) {
     if ((*module).destroy != NULL)
