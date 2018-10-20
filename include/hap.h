@@ -1,45 +1,22 @@
 #ifndef __HAP_H_
 #define __HAP_H_
 
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
-#if defined _WIN32 || defined __CYGWIN__
-#define HAP_MODULE_EXPORT __declspec(dllexport)
-#else
-#if __GNUC__ >= 4
-#define HAP_MODULE_EXPORT __attribute__ ((visibility ("default")))
-#else
-#define HAP_MODULE_EXPORT
-#endif
-typedef int errno_t;
-#define strtok_s(token, delimiter, _) strtok(token, delimiter)
-#define fopen_s(stream, filename, mode) ((*(stream))=fopen((filename),(mode)))==0
-#define strcpy_s(destination, _, source) (strcpy(destination, source))==0
-#define strerror_s(message, length, error) sprintf(message, "error code %d", error)
-#endif
+#include <hap/compatibility.h>
+#include <hap/typedefs.h>
 
-typedef double Unit;
 
 #ifndef HAP_TIME_DATA_TYPE
 typedef float HAPTime;
 #else
 typedef HAP_TIME_DATA_TYPE HAPTime;
 #endif
-
-typedef struct HAPEngine HAPEngine;
-typedef struct HAPSymbol HAPSymbol;
-typedef struct HAPTag    HAPTag;
-
-typedef struct timeState timeState;
-
-typedef struct HAPConfiguration HAPConfiguration;
-typedef struct HAPConfigurationOption  HAPConfigurationOption;
-typedef struct HAPConfigurationSection HAPConfigurationSection;
-typedef union  HAPConfigurationValue   HAPConfigurationValue;
 
 
 typedef enum {
@@ -71,15 +48,15 @@ struct timeState {
 
 
 struct HAPEngine {
-	void(*log)(HAPEngine *engine, FILE* dest, char *message, va_list arguments);
-	bool(*log_debug)(HAPEngine *engine, char *message, ...);
-	bool(*log_info)(HAPEngine *engine, char *message, ...);
-	bool(*log_notice)(HAPEngine *engine, char *message, ...);
-	bool(*log_warning)(HAPEngine *engine, char *message, ...);
-	bool(*log_error)(HAPEngine *engine, char *message, ...);
-	void(*log_fatal_error)(HAPEngine *engine, int code, char *message, ...);
-	
-	char *name;
+    void(*log)(HAPEngine *engine, FILE* dest, char *message, va_list arguments);
+    bool(*log_debug)(HAPEngine *engine, char *message, ...);
+    bool(*log_info)(HAPEngine *engine, char *message, ...);
+    bool(*log_notice)(HAPEngine *engine, char *message, ...);
+    bool(*log_warning)(HAPEngine *engine, char *message, ...);
+    bool(*log_error)(HAPEngine *engine, char *message, ...);
+    void(*log_fatal_error)(HAPEngine *engine, int code, char *message, ...);
+
+    char *name;
 
     int  *argc;
     char **argvp;
@@ -87,9 +64,9 @@ struct HAPEngine {
     timeState *time;
     HAPConfiguration *configuration;
 
-	HAPLogLevel logLevel;
+    HAPLogLevel logLevel;
 
-	bool isRunning;
+    bool isRunning;
 };
 
 
