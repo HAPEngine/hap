@@ -103,7 +103,8 @@ int hap_configuration_token_next(FILE *file, HAPConfigurationToken *token) {
         (*token).value[valueIndex] = cursor;
         ++valueIndex;
     }
-    (*token).value[valueIndex] = '\0';
+
+    if ((*token).type != FINISHED) (*token).value[valueIndex] = '\0';
 
     return 0;
 }
